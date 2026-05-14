@@ -1,7 +1,22 @@
+# 프로젝트에 필요한 도구 모음
+# 터미널에서 pip install -r requirements.txt 실행 시 한 번에 설치됨
+
+
+
+# ========= 백엔드 구축 =========
+
 fastapi
 
+# 백엔드 실행 도구
 uvicorn
 
+# BaseModel 정의 시 필요
 pydantic
 
+# EmailStr 로 email 형식 검증 시 필요
 email-validator
+
+# JWT 라이브러리
+python-jose[cryptography]
+
+dotenv
