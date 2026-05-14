@@ -13,13 +13,25 @@ FastAPI 애플리케이션 실행을 담당하는 파일
 from fastapi import FastAPI
 
 from app.database import init_db
+from app.exceptions.api_exception import ApiException
+from app.exceptions.exception_handlers import api_exception_handler
+from app.routers import auth_router, order_router, point_router
 
 
 # FastAPI 앱 생성
 app = FastAPI()
+app.add_exception_handler(
+    ApiException,
+    api_exception_handler
+)
 
 # 서버 시작 시 DB 테이블 생성
 init_db()
+
+# API 라우터 등록
+app.include_router(auth_router.router)
+app.include_router(point_router.router)
+app.include_router(order_router.router)
 
 
 @app.get("/")
