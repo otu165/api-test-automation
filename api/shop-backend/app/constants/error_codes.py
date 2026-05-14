@@ -11,20 +11,41 @@ API 실패 응답에서 사용할 공통 에러 코드를 모아놓은 파일
 """
 
 
-# 중복 이메일
-EMAIL_ALREADY_EXISTS = "EMAIL_ALREADY_EXISTS"
+# 부적절한 이메일 입력
+INVALID_EMAIL = "INVALID_EMAIL"
 
-# 로그인 시 이메일/비밀번호가 틀림
+# 부적절한 비밀번호 입력
+INVALID_PASSWORD = "INVALID_PASSWORD"
+
+# 부적절한 이름 입력
+INVALID_NAME = "INVALID_NAME"
+
+# 중복 이메일
+DUPLICATED_EMAIL = "DUPLICATED_EMAIL"
+
+# 로그인 시 이메일/비밀번호 틀림
 INVALID_CREDENTIALS = "INVALID_CREDENTIALS"
 
-# 사용자를 찾을 수 없음
+# 일치하는 사용자 없음
 USER_NOT_FOUND = "USER_NOT_FOUND"
 
-# 상품을 찾을 수 없음
+# 부적절한 충전 금액 (0 이하)
+INVALID_POINT_AMOUNT = "INVALID_POINT_AMOUNT"
+
+# 부적절한 주문 수량 (0 이하)
+INVALID_ORDER_QUANTITY = "INVALID_ORDER_QUANTITY"
+
+# 일치하는 상품 없음
 PRODUCT_NOT_FOUND = "PRODUCT_NOT_FOUND"
 
 # 상품 재고 부족
 INSUFFICIENT_STOCK = "INSUFFICIENT_STOCK"
 
-# 상품 구매에 필요한 포인트 부족
+# 사용자 포인트 부족
 INSUFFICIENT_POINT = "INSUFFICIENT_POINT"
+
+# 인증 토큰이 없거나 올바르지 않음
+UNAUTHORIZED = "UNAUTHORIZED"
+
+# 예상치 못한 서버 에러 발생
+INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
