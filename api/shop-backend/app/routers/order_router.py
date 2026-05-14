@@ -17,7 +17,7 @@ from app.services import order_service
 from app.utils.auth import get_current_user_id
 
 
-router = APIRouter()
+router = APIRouter(tags = ["Orders"])
 
 
 @router.post("/orders", status_code = 201)
