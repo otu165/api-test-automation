@@ -12,16 +12,11 @@
 """
 
 
-from fastapi.testclient import TestClient
-
-from app.main import app
 from tests.clients import auth_client
 from app.constants import error_codes
 
-client = TestClient(app)
 
-
-def test_signup_success():
+def test_signup_success(client):
     """회원가입 성공 응답 검증"""
 
     response = auth_client.signup(
@@ -52,7 +47,7 @@ def test_signup_success():
 
 
 
-def test_signin_success():
+def test_signin_success(client):
     """로그인 성공 및 JWT 발급 검증"""
 
     # 회원가입
@@ -94,7 +89,7 @@ def test_signin_success():
     assert body["data"]["token_type"] == "bearer"
 
 
-def test_signup_duplicate_email():
+def test_signup_duplicate_email(client):
     """중복 이메일 회원가입 실패 응답 검증"""
 
     auth_client.signup(
@@ -130,7 +125,7 @@ def test_signup_duplicate_email():
     assert body["error"]["code"] == error_codes.DUPLICATED_EMAIL
 
 
-def test_signin_wrong_password():
+def test_signin_wrong_password(client):
     """잘못된 비밀번호 로그인 실패 응답 검증"""
 
     auth_client.signup(
@@ -165,7 +160,7 @@ def test_signin_wrong_password():
     assert body["error"]["code"] == error_codes.INVALID_CREDENTIALS
 
 
-def test_signin_not_registered_email():
+def test_signin_not_registered_email(client):
     """존재하지 않는 이메일 로그인 실패 응답 검증"""
 
     response = auth_client.signin(
@@ -193,7 +188,7 @@ def test_signin_not_registered_email():
     assert body["error"]["code"] == error_codes.INVALID_CREDENTIALS
 
 
-def test_signup_invalid_email_format():
+def test_signup_invalid_email_format(client):
     """
     잘못된 이메일 형식 회원가입 실패 응답 검증
     models > EmailStr 타입이 자동 검증하는 부분 (공통 에러 응답 사용 X)
