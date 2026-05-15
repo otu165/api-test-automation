@@ -11,7 +11,7 @@ pytest 공통 fixture 를 관리하는 파일
 
 """
 
-
+import uuid
 import pytest
 from fastapi.testclient import TestClient
 
@@ -31,7 +31,7 @@ def signed_up_user(client: TestClient):
     """테스트용 회원가입 유저 생성"""
 
     user_data = {
-        "email" : "fixture-user@example.com",
+        "email" : f"fixture-user-{uuid.uuid4()}@example.com",
         "password" : "1234",
         "name" : "fixture-user"
     }
