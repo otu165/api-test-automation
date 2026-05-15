@@ -20,3 +20,15 @@ email-validator
 python-jose[cryptography]
 
 dotenv
+
+# ========== pytest ==========
+
+# 테스트 실행 도구
+pytest
+
+# Python 에서 API request 보내는 도구
+requests
+
+# Python HTTP 요청 라이브러리
+# (TestClient 가 내부적으로 httpx 를 사용해서 필요함)
+httpx
