@@ -10,14 +10,15 @@ SQLite 데이터베이스 커넥션 및 초기화를 담당하는 파일
 
 """
 
-
+import os
 import sqlite3
 
 from app import sql_queries
 
 
 # SQLite 데이터베이스 파일명 정의
-DATABASE_NAME = "shop.db"
+# 이미 정의된 DATABASE_NAME 환경변수가 있으면 그 값 사용 (없으면 기본값으로 shop.db 사용)
+DATABASE_NAME = os.getenv("DATABASE_NAME", "shop.db")
 
 
 def get_connection():

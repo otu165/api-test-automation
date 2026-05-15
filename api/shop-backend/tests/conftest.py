@@ -11,7 +11,18 @@ pytest 공통 fixture 를 관리하는 파일
 
 """
 
+
+import os
 import uuid
+
+# app.main 을 import 하면 내부에서 init_db() 가 실행되기 때문에
+# from app.main import app 보다 위에 위치해야 함
+#
+# 현재 실행중인 Python 프로세스 메모리 안에서만 환경변수 생성
+# ㄴ 즉, pytest 프로세스 안에서만 유효하므로 pytest 종료 시 환경변수가 사라진다
+os.environ["DATABASE_NAME"] = "test_shop.db"
+
+
 import pytest
 from fastapi.testclient import TestClient
 
