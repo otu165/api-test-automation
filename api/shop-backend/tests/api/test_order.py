@@ -14,6 +14,7 @@
 from fastapi.testclient import TestClient
 
 from tests.clients import order_client
+from app.constants import error_codes
 
 
 def test_create_order_success(
@@ -71,3 +72,53 @@ def test_create_order_with_invalid_token(
 
     # 상태코드 검증
     assert response.status_code == 401
+
+
+def test_create_order_with_not_found_product(
+        client: TestClient,
+        access_token: str
+):
+    """존재하지 않는 상품 주문 실패 응답 검증"""
+
+    response = order_client.create_order(
+        client = client,
+        access_token = access_token,
+        product_id = "NOTFOUND",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 404
+
+    body = response.json()
+
+    # 실패 응답 구조 검증
+    assert body["success"] is False
+    assert body["message"] == "주문 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.PRODUCT_NOT_FOUND
+
+
+def test_create_order_with_zero_quantity(
+        client: TestClient,
+        access_token: str
+):
+    """주문 수량 0 입력 시 validation 실패 응답 검증"""
+
+    response = order_client.create_order(
+        client = client,
+        access_token = access_token,
+        product_id = "MS1001",
+        quantity = 0
+    )
+
+    # 상태코드 검증
+    # models.py 에서 quantity: int = Field(gt=0) 에러 체크되는 부분
+    assert response.status_code == 422
