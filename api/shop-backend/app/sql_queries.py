@@ -80,6 +80,13 @@ UPDATE_USER_POINT = """
 """
 
 
+SELECT_USER_POINT_BY_ID = """
+    SELECT point
+      FROM users
+     WHERE user_id = ?
+"""
+
+
 # ===================== products =====================
 
 SELECT_ALL_PRODUCTS = """

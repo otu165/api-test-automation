@@ -79,3 +79,16 @@ def update_user_point(user_id: str, new_point: int):
     conn.commit()
     conn.close()
 
+
+def select_user_point_by_id(user_id: str):
+    """유저 포인트 조회"""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(sql_queries.SELECT_USER_POINT_BY_ID, (user_id,))
+    point = cursor.fetchone()
+
+    conn.close()
+
+    return dict(point) if point else None

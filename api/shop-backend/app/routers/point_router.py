@@ -32,3 +32,14 @@ def charge_point(
         user_id = current_user_id,
         amount = request.amount
     )
+
+
+@router.get("/points")
+def get_point(
+        current_user_id: str = Depends(get_current_user_id)
+):
+    """포인트 조회 API"""
+
+    return point_service.select_point(
+        user_id = current_user_id
+    )

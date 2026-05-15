@@ -59,3 +59,29 @@ def update_point(
             "new_point": new_point
         }
     )
+
+
+def select_point(user_id: str):
+    """포인트 조회"""
+
+    # 유저 존재 확인
+    user = user_repository.select_user_by_id(user_id)
+
+    if user is None:
+        raise ApiException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            message = "포인트 조회 실패",
+            code = error_codes.USER_NOT_FOUND,
+            detail = "요청된 사용자를 찾을 수 없습니다."
+        )
+
+    data = user_repository.select_user_point_by_id(user_id)
+
+    # 결과 반환
+
+    return success_response(
+        message = "포인트 조회 성공",
+        data = {
+            "point" : data["point"]
+        }
+    )
