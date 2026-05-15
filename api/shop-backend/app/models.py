@@ -1,5 +1,5 @@
 """
-경로 : shop_backend/app/models.py
+경로 : shop-backend/app/models.py
 파일명 : models.py
 
 API 요청 및 응답 데이터 모델을 관리하는 파일

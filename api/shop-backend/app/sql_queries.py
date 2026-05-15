@@ -1,5 +1,5 @@
 """
-경로 : shop_backend/app/sql_queries.py
+경로 : shop-backend/app/sql_queries.py
 파일명 : sql_queries.py
 
 SQLite 데이터베이스에서 사용하는 SQL 쿼리를 모아놓은 파일

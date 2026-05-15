@@ -1,5 +1,5 @@
 """
-경로 : shop_backend/app/database.py
+경로 : shop-backend/app/database.py
 파일명 : database.py
 
 SQLite 데이터베이스 커넥션 및 초기화를 담당하는 파일
