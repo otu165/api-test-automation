@@ -89,6 +89,13 @@ SELECT_USER_POINT_BY_ID = """
 
 # ===================== products =====================
 
+
+INSERT_PRODUCT = """
+    INSERT OR IGNORE INTO products (product_id, name, price, stock)
+    VALUES (?, ?, ?, ?)
+"""
+
+
 SELECT_ALL_PRODUCTS = """
     SELECT product_id, name, price, stock
       FROM products

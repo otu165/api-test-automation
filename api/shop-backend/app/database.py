@@ -44,6 +44,14 @@ def init_db():
     cursor.execute(sql_queries.CREATE_PRODUCTS_TABLE)
     cursor.execute(sql_queries.CREATE_ORDERS_TABLE)
 
+    # 기본 상품 데이터 추가
+    products = [
+        ("KB1001", "키보드", 500, 500),
+        ("MS1001", "마우스", 300, 500)
+    ]
+
+    cursor.executemany(sql_queries.INSERT_PRODUCT, products)
+
     # 변경된 내용 저장 후 DB 연결 종료
     conn.commit()
     conn.close()
