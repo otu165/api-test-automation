@@ -12,6 +12,8 @@
 """
 
 
+import uuid
+
 from tests.clients import auth_client
 from app.constants import error_codes
 
@@ -21,7 +23,7 @@ def test_signup_success(client):
 
     response = auth_client.signup(
         client = client,
-        email = "signup@example.com",
+        email = f"signup-{uuid.uuid4()}@example.com",
         password = "1234",
         name = "테스트유저"
     )
@@ -50,10 +52,12 @@ def test_signup_success(client):
 def test_signin_success(client):
     """로그인 성공 및 JWT 발급 검증"""
 
+    email = f"signin-{uuid.uuid4()}@example.com"
+
     # 회원가입
     auth_client.signup(
         client = client,
-        email = "signin@example.com",
+        email = email,
         password = "1234",
         name = "로그인유저"
     )
@@ -61,7 +65,7 @@ def test_signin_success(client):
     # 로그인
     response = auth_client.signin(
         client = client,
-        email = "signin@example.com",
+        email = email,
         password = "1234"
     )
 
