@@ -10,11 +10,13 @@
 
 """
 
-from fastapi import Request
+from fastapi import Request, status
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 from app.exceptions.api_exception import ApiException
 from app.utils.response import error_response
+from app.constants import error_codes
 
 
 def api_exception_handler(
@@ -38,5 +40,21 @@ def api_exception_handler(
             message = exception.message,
             code = exception.code,
             detail = exception.detail
+        )
+    )
+
+
+async def validation_exception_handler(
+        request: Request,
+        exception: RequestValidationError
+) -> JSONResponse:
+    """요청 데이터 validation 실패 응답 반환"""
+
+    return JSONResponse(
+        status_code = status.HTTP_422_UNPROCESSABLE_CONTENT,
+        content = error_response(
+            message = "부적절한 데이터 입력",
+            code = error_codes.VALIDATION_ERROR,
+            detail = str(exception.errors())
         )
     )

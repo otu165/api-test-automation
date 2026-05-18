@@ -11,18 +11,25 @@ FastAPI 애플리케이션 실행을 담당하는 파일
 """
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 
 from app.database import init_db
 from app.exceptions.api_exception import ApiException
-from app.exceptions.exception_handlers import api_exception_handler
+from app.exceptions.exception_handlers import api_exception_handler, validation_exception_handler
 from app.routers import auth_router, order_router, point_router
 
 
 # FastAPI 앱 생성
 app = FastAPI()
+
 app.add_exception_handler(
-    ApiException,
-    api_exception_handler
+    ApiException,           # 예외타입
+    api_exception_handler   # 처리함수
+)
+
+app.add_exception_handler(
+    RequestValidationError,
+    validation_exception_handler
 )
 
 # 서버 시작 시 DB 테이블 생성
