@@ -28,6 +28,8 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from tests.clients.auth_client import AuthClient
+from app.database import get_connection
+from app import sql_queries
 
 
 @pytest.fixture
@@ -35,6 +37,35 @@ def client():
     """테스트용 FastAPI Client 생성"""
 
     return TestClient(app)
+
+
+# autouse = True : 모든 테스트 전에 자동 실행
+# 즉, 테스트 함수에 reset_test_database 를 적지 않아도 자동으로 항상 실행한다.
+@pytest.fixture(autouse = True)
+def reset_test_database():
+    """테스트 실행 전 테스트 DB 초기화"""
+
+    with get_connection() as connection:
+        cursor = connection.cursor()
+
+        # users 테이블 데이터 삭제
+        cursor.execute("DELETE FROM users")
+
+        # products 테이블 데이터 삭제
+        cursor.execute("DELETE FROM products")
+
+        # orders 테이블 데이터 삭제
+        cursor.execute("DELETE FROM orders")
+
+        # 테스트용 기본 상품 데이터 재생성
+        products = [
+            ("KB1001", "키보드", 500, 10),
+            ("MS1001", "마우스", 300, 10)
+        ]
+
+        cursor.executemany(sql_queries.INSERT_PRODUCT, products)
+
+        connection.commit()
 
 
 @pytest.fixture
