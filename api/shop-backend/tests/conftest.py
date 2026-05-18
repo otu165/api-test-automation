@@ -45,7 +45,9 @@ def client():
 def reset_test_database():
     """테스트 실행 전 테스트 DB 초기화"""
 
-    with get_connection() as connection:
+    connection = get_connection()
+
+    try:
         cursor = connection.cursor()
 
         # order 테이블 데이터 삭제
@@ -67,6 +69,9 @@ def reset_test_database():
         cursor.executemany(sql_queries.INSERT_PRODUCT, products)
 
         connection.commit()
+
+    finally:
+        connection.close()
 
 
 @pytest.fixture

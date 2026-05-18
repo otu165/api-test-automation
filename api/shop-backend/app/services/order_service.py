@@ -19,13 +19,14 @@ from app.utils.response import success_response
 from app.constants import error_codes
 from app.exceptions.api_exception import ApiException
 from app.repositories import user_repository, product_repository, order_repository
+from app.database import get_connection
 
 
 def insert_order(
         user_id: str,
         product_id: str,
         quantity: int
-) -> dict:
+):
     """신규 주문 생성"""
 
     # 구매 개수가 양의 정수인지 확인
@@ -80,34 +81,57 @@ def insert_order(
             detail = "사용자 계정의 잔여 포인트가 부족합니다."
         )
 
-    # 포인트 차감
-    new_point = user["point"] - total_price
-    user_repository.update_user_point(user_id, new_point)
+    conn = get_connection()
 
-    # 재고 차감
-    new_stock = product["stock"] - quantity
-    product_repository.update_product_stock(product_id, new_stock)
+    try:
 
-    # order_id 생성
-    order_id = str(uuid.uuid4())
+        # 포인트 차감
+        new_point = user["point"] - total_price
+        user_repository.update_user_point(user_id, new_point, conn)
 
-    # 주문 생성 (DB에 기록)
-    order_id = order_repository.insert_order(
-        order_id, user_id, product_id, quantity, total_price
-    )
+        # 재고 차감
+        new_stock = product["stock"] - quantity
+        product_repository.update_product_stock(product_id, new_stock, conn)
 
-    # 결과 반환
-    return success_response(
-        message = "주문 성공",
-        data = {
-            "order_id" : order_id,
-            "user_id" : user_id,
-            "product_id" : product_id,
-            "quantity" : quantity,
-            "total_price" : total_price,
-            "status" : "PAID"
-        }
-    )
+        # order_id 생성
+        order_id = str(uuid.uuid4())
+
+        # 주문 생성 (DB에 기록)
+        order_id = order_repository.insert_order(
+            order_id, user_id, product_id, quantity, total_price, conn
+        )
+
+        conn.commit()
+
+        # 결과 반환
+        return success_response(
+            message="주문 성공",
+            data={
+                "order_id": order_id,
+                "user_id": user_id,
+                "product_id": product_id,
+                "quantity": quantity,
+                "total_price": total_price,
+                "status": "PAID"
+            }
+        )
+
+    except ApiException:
+        conn.rollback()
+        raise # 예외 응답 형태는 기존 예외 처리 흐름에 맡긴다
+    except Exception:
+        conn.rollback()
+        raise ApiException(
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message = "주문 실패",
+            code = error_codes.INTERNAL_SERVER_ERROR,
+            detail = "서버 내부 오류가 발생했습니다."
+        )
+
+    finally:
+        conn.close()
+
+
 
 
 def select_orders() -> dict:

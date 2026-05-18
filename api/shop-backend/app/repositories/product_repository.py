@@ -10,6 +10,9 @@ products 테이블 조회를 담당하는 파일
 """
 
 
+import sqlite3
+from typing import Optional
+
 from app.database import get_connection
 from app import sql_queries
 
@@ -58,13 +61,36 @@ def select_product_by_id(product_id: str):
     return dict(product) if product else None
 
 
-def update_product_stock(product_id: str, new_stock: int):
-    """상품 재고 갱신"""
+def update_product_stock(
+        product_id: str,
+        new_stock: int,
+        connection: Optional[sqlite3.Connection] = None
+):
+    """
+    상품 재고 갱신
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    - connection 이 전달되면, 다른 DB 작업들과 같은 트랜잭션 안에서 실행한다.
+    - connection 이 없으면, 기존처럼 함수 혼자 DB 연결을 만들어서 사용한다.
+    """
 
-    cursor.execute(sql_queries.UPDATE_PRODUCT_STOCK, (new_stock, product_id))
+    # connection 이 전달된 경우
+    if connection is not None:
+        connection.execute(
+            sql_queries.UPDATE_PRODUCT_STOCK,
+            (new_stock, product_id)
+        )
+        return
 
-    conn.commit()
-    conn.close()
+    # connection 이 전달되지 않은 경우
+    connection = get_connection()
+
+    try:
+        connection.execute(
+            sql_queries.UPDATE_PRODUCT_STOCK,
+            (new_stock, product_id)
+        )
+
+        connection.commit()
+
+    finally:
+        connection.close()

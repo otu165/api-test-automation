@@ -9,6 +9,11 @@ users 테이블 조회 및 저장을 담당하는 파일
 - 사용자 조회 기능 제공 (email, user_id 기준)
 
 """
+
+
+import sqlite3
+from typing import Optional
+
 from app.database import get_connection
 from app import sql_queries
 
@@ -68,16 +73,41 @@ def select_user_by_id(user_id: str):
     return dict(user) if user else None
 
 
-def update_user_point(user_id: str, new_point: int):
-    """유저 포인트 갱신"""
+def update_user_point(
+        user_id: str,
+        new_point: int,
+        connection: Optional[sqlite3.Connection] = None
+):
+    """
+    유저 포인트 갱신
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    - connection 이 전달되면, 다른 DB 작업들과 같은 연결을 함께 사용한다.
+    - connection 이 없으면, 기존처럼 함수 혼자 DB 연결을 만들어서 사용한다.
+    """
 
-    cursor.execute(sql_queries.UPDATE_USER_POINT, (new_point, user_id))
+    # connection 이 전달된 경우
+    if connection is not None:
+        connection.execute(
+            sql_queries.UPDATE_USER_POINT,
+            (new_point, user_id)
+        )
+        return
 
-    conn.commit()
-    conn.close()
+    # connection 이 없는 경우
+    connection = get_connection()
+
+    try:
+        # sqlite3.Connection 객체도 execute() 를 직접 사용할 수 있음
+        # fetch 가 필요하지 않다면 굳이 cursor 를 변수로 꺼낼 필요 없음
+        connection.execute(
+            sql_queries.UPDATE_USER_POINT,
+            (new_point, user_id)
+        )
+
+        connection.commit()
+
+    finally:
+        connection.close()
 
 
 def select_user_point_by_id(user_id: str):

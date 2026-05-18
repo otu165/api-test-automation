@@ -8,7 +8,8 @@ orders 테이블 저장을 담당하는 파일
 - 주문 생성 기능 제공
 
 """
-
+import sqlite3
+from typing import Optional
 
 from app.database import get_connection
 from app import sql_queries
@@ -19,25 +20,41 @@ def insert_order(
         user_id: str,
         product_id: str,
         quantity: int,
-        total_price: int
+        total_price: int,
+        connection: Optional[sqlite3.Connection] = None
 ):
-    """신규 주문 생성"""
+    """
+    신규 주문 생성
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    - connection 이 있으면 같은 트랜잭션 안에서 저장
+    - connection 이 없으면 단독 저장
+    """
 
-    cursor.execute(
-        sql_queries.INSERT_ORDER,
-        (order_id, user_id, product_id, quantity, total_price, "PAID")
+    params = (
+        order_id,
+        user_id,
+        product_id,
+        quantity,
+        total_price,
+        "PAID"
     )
 
-    # cursor.lastrowid = 새롭게 INSERT 한 행의 자동 생성 PK 값을 반환함
-    order_id = cursor.lastrowid
+    # connection 이 전달된 경우
+    if connection is not None:
+        connection.execute(sql_queries.INSERT_ORDER, params)
 
-    conn.commit()
-    conn.close()
+        return order_id
 
-    return order_id
+    # connection 이 전달되지 않은 경우
+    connection = get_connection()
+    try:
+        connection.execute(sql_queries.INSERT_ORDER, params)
+        connection.commit()
+
+        return order_id
+
+    finally:
+        connection.close()
 
 
 def select_all_orders():
