@@ -12,7 +12,7 @@
 
 """
 
-
+import uuid
 from fastapi import status
 
 from app.utils.response import success_response
@@ -88,9 +88,12 @@ def insert_order(
     new_stock = product["stock"] - quantity
     product_repository.update_product_stock(product_id, new_stock)
 
+    # order_id 생성
+    order_id = str(uuid.uuid4())
+
     # 주문 생성 (DB에 기록)
     order_id = order_repository.insert_order(
-        user_id, product_id, quantity, total_price
+        order_id, user_id, product_id, quantity, total_price
     )
 
     # 결과 반환

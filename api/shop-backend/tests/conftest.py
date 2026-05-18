@@ -48,14 +48,15 @@ def reset_test_database():
     with get_connection() as connection:
         cursor = connection.cursor()
 
-        # users 테이블 데이터 삭제
+        # order 테이블 데이터 삭제
+        # (user, product 테이블을 바라보는 FK 있으므로 우선 삭제)
+        cursor.execute("DELETE FROM tb_order")
+
+        # user 테이블 데이터 삭제
         cursor.execute("DELETE FROM tb_user")
 
-        # products 테이블 데이터 삭제
+        # product 테이블 데이터 삭제
         cursor.execute("DELETE FROM tb_product")
-
-        # orders 테이블 데이터 삭제
-        cursor.execute("DELETE FROM tb_order")
 
         # 테스트용 기본 상품 데이터 재생성
         products = [

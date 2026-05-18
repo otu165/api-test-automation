@@ -14,7 +14,13 @@ from app.database import get_connection
 from app import sql_queries
 
 
-def insert_order(user_id: str, product_id: str, quantity: int, total_price: int):
+def insert_order(
+        order_id: str,
+        user_id: str,
+        product_id: str,
+        quantity: int,
+        total_price: int
+):
     """신규 주문 생성"""
 
     conn = get_connection()
@@ -22,7 +28,7 @@ def insert_order(user_id: str, product_id: str, quantity: int, total_price: int)
 
     cursor.execute(
         sql_queries.INSERT_ORDER,
-        (user_id, product_id, quantity, total_price, "PAID")
+        (order_id, user_id, product_id, quantity, total_price, "PAID")
     )
 
     # cursor.lastrowid = 새롭게 INSERT 한 행의 자동 생성 PK 값을 반환함

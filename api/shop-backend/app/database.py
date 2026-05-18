@@ -49,8 +49,8 @@ def init_db():
 
     # 기본 상품 데이터 추가
     products = [
-        ("KB1001", "키보드", 500, 500),
-        ("MS1001", "마우스", 300, 500)
+        ("KB1001", "키보드", 500, 10),
+        ("MS1001", "마우스", 300, 10)
     ]
 
     cursor.executemany(sql_queries.INSERT_PRODUCT, products)

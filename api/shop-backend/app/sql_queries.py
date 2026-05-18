@@ -51,7 +51,14 @@ CREATE_ORDER_TABLE = """
 # ===================== tb_user =====================
 
 INSERT_USER = """
-    INSERT INTO tb_user (user_id, email, password, name, point, created_at)
+    INSERT INTO tb_user (
+        user_id, 
+        email, 
+        password, 
+        name, 
+        point, 
+        created_at
+    )
     VALUES (?, ?, ?, ?, ?, DATETIME('now'));
 """
 
@@ -73,7 +80,9 @@ SELECT_USER_BY_EMAIL_AND_PASSWORD = """
 
 
 SELECT_USER_BY_ID = """
-    SELECT user_id, name, point
+    SELECT user_id
+         , name
+         , point
       FROM tb_user
      WHERE user_id = ?
 """
@@ -97,19 +106,31 @@ SELECT_USER_POINT_BY_ID = """
 
 
 INSERT_PRODUCT = """
-    INSERT OR IGNORE INTO tb_product (product_id, name, price, stock)
-    VALUES (?, ?, ?, ?)
+    INSERT OR IGNORE INTO tb_product (
+        product_id, 
+        name, 
+        price, 
+        stock,
+        created_at
+    )
+    VALUES (?, ?, ?, ?, DATETIME('now'))
 """
 
 
 SELECT_ALL_PRODUCTS = """
-    SELECT product_id, name, price, stock
+    SELECT product_id
+         , name
+         , price
+         , stock
       FROM tb_product
 """
 
 
 SELECT_PRODUCT_BY_ID = """
-    SELECT product_id, name, price, stock
+    SELECT product_id
+         , name
+         , price
+         , stock
       FROM tb_product
      WHERE product_id = ?
 """
@@ -125,12 +146,26 @@ UPDATE_PRODUCT_STOCK = """
 # ===================== tb_order =====================
 
 INSERT_ORDER = """
-    INSERT INTO tb_order (user_id, product_id, quantity, total_price, status, created_at)
-    VALUES (?, ?, ?, ?, ?, DATETIME('now'))
+    INSERT INTO tb_order (
+        order_id,
+        user_id,
+        product_id, 
+        quantity, 
+        total_price, 
+        status, 
+        created_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, DATETIME('now'))
 """
 
 
 SELECT_ALL_ORDERS = """
-    SELECT order_id, user_id, product_id, quantity, total_price, status
+    SELECT order_id
+         , user_id
+         , product_id
+         , quantity
+         , total_price
+         , status
+         , created_at
       FROM tb_order
 """
