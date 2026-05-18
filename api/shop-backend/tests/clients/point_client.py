@@ -12,21 +12,14 @@
 """
 
 
-from fastapi.testclient import TestClient
+from tests.clients.base_client import BaseClient
 
 
-def get_point(
-        client: TestClient,
-        access_token: str | None = None
-):
-    """포인트 조회 API 요청"""
+class PointClient(BaseClient):
 
-    headers = {}
+    def get_point(self):
+        """포인트 조회 API 요청"""
 
-    if access_token:
-        headers["Authorization"] = f"Bearer {access_token}"
-
-    return client.get(
-        "/points/points",
-        headers = headers
-    )
+        return self.get(
+            "/points/points",
+        )

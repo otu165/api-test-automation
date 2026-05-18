@@ -15,7 +15,7 @@
 from fastapi.testclient import TestClient
 
 from app.constants import error_codes
-from tests.clients import point_client
+from tests.clients.point_client import PointClient
 
 
 def test_get_point_success(
@@ -24,10 +24,9 @@ def test_get_point_success(
 ):
     """포인트 조회 성공 응답 검증"""
 
-    response = point_client.get_point(
-        client = client,
-        access_token = access_token
-    )
+    point_client = PointClient(client, access_token)
+
+    response = point_client.get_point()
 
     # 상태코드 검증
     assert response.status_code == 200
@@ -54,10 +53,12 @@ def test_get_point_with_invalid_token(
 ):
     """잘못된 토큰 포인트 조회 실패 응답 검증"""
 
-    response = point_client.get_point(
-        client = client,
+    point_client = PointClient(
+        client,
         access_token = "invalid-token"
     )
+
+    response = point_client.get_point()
 
     # 상태코드 검증
     assert response.status_code == 401
