@@ -13,7 +13,7 @@
 
 from fastapi.testclient import TestClient
 
-from tests.clients import order_client
+from tests.clients.order_client import OrderClient
 from app.constants import error_codes
 
 
@@ -26,9 +26,9 @@ def test_create_order_success(
     product_id = "KB1001"
     quantity = 1
 
+    order_client = OrderClient(client, access_token)
+
     response = order_client.create_order(
-        client = client,
-        access_token = access_token,
         product_id = product_id,
         quantity = quantity
     )
@@ -62,10 +62,12 @@ def test_create_order_with_invalid_token(
         client: TestClient
 ):
     """잘못된 토큰 주문 생성 실패 응답 검증"""
+    order_client = OrderClient(
+        client,
+        access_token = "invalid-token"
+    )
 
     response = order_client.create_order(
-        client = client,
-        access_token = "invalid-token",
         product_id = "KB1001",
         quantity = 1
     )
@@ -80,9 +82,9 @@ def test_create_order_with_not_found_product(
 ):
     """존재하지 않는 상품 주문 실패 응답 검증"""
 
+    order_client = OrderClient(client, access_token)
+
     response = order_client.create_order(
-        client = client,
-        access_token = access_token,
         product_id = "NOTFOUND",
         quantity = 1
     )
@@ -112,9 +114,9 @@ def test_create_order_with_zero_quantity(
 ):
     """주문 수량 0 입력 시 validation 실패 응답 검증"""
 
+    order_client = OrderClient(client, access_token)
+
     response = order_client.create_order(
-        client = client,
-        access_token = access_token,
         product_id = "MS1001",
         quantity = 0
     )
