@@ -27,7 +27,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from tests.clients import auth_client
+from tests.clients.auth_client import AuthClient
 
 
 @pytest.fixture
@@ -47,8 +47,9 @@ def signed_up_user(client: TestClient):
         "name" : "fixture-user"
     }
 
+    auth_client = AuthClient(client)
+
     response = auth_client.signup(
-        client = client,
         email = user_data["email"],
         password = user_data["password"],
         name = user_data["name"]
@@ -69,8 +70,9 @@ def access_token(
 ):
     """테스트용 access_token 생성"""
 
+    auth_client = AuthClient(client)
+
     response = auth_client.signin(
-        client = client,
         email = signed_up_user["email"],
         password = signed_up_user["password"]
     )

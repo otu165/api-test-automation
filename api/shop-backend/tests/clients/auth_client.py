@@ -12,38 +12,41 @@
 """
 
 
-from fastapi.testclient import TestClient
+from httpx import Response
+from tests.clients.base_client import BaseClient
 
 
-def signup(
-        client: TestClient,
-        email: str,
-        password: str,
-        name: str
-):
-    """회원가입 API 요청을 보냄"""
+class AuthClient(BaseClient):
 
-    return client.post(
-        "/auth/signup",
-        json = {
-            "email" : email,
-            "password" : password,
-            "name" : name
-        }
-    )
+    def signup(
+            self,
+            email: str,
+            password: str,
+            name: str
+    ):
+        """회원가입 API 요청을 보냄"""
+
+        return self.post(
+            "/auth/signup",
+            payload = {
+                "email" : email,
+                "password" : password,
+                "name" : name
+            }
+        )
 
 
-def signin(
-        client: TestClient,
-        email: str,
-        password: str
-):
-    """로그인 API 요청을 보냄"""
+    def signin(
+            self,
+            email: str,
+            password: str
+    ):
+        """로그인 API 요청을 보냄"""
 
-    return client.post(
-        "/auth/signin",
-        json = {
-            "email" : email,
-            "password" : password
-        }
-    )
+        return self.post(
+            "/auth/signin",
+            payload = {
+                "email" : email,
+                "password" : password
+            }
+        )

@@ -14,15 +14,16 @@
 
 import uuid
 
-from tests.clients import auth_client
+from tests.clients.auth_client import AuthClient
 from app.constants import error_codes
 
 
 def test_signup_success(client):
     """회원가입 성공 응답 검증"""
 
+    auth_client = AuthClient(client)
+
     response = auth_client.signup(
-        client = client,
         email = f"signup-{uuid.uuid4()}@example.com",
         password = "1234",
         name = "테스트유저"
@@ -54,9 +55,10 @@ def test_signin_success(client):
 
     email = f"signin-{uuid.uuid4()}@example.com"
 
+    auth_client = AuthClient(client)
+
     # 회원가입
     auth_client.signup(
-        client = client,
         email = email,
         password = "1234",
         name = "로그인유저"
@@ -64,7 +66,6 @@ def test_signin_success(client):
 
     # 로그인
     response = auth_client.signin(
-        client = client,
         email = email,
         password = "1234"
     )
@@ -96,15 +97,15 @@ def test_signin_success(client):
 def test_signup_duplicate_email(client):
     """중복 이메일 회원가입 실패 응답 검증"""
 
+    auth_client = AuthClient(client)
+
     auth_client.signup(
-        client = client,
         email = "duplicate@example.com",
         password = "1234",
         name = "첫번째유저"
     )
 
     response = auth_client.signup(
-        client = client,
         email = "duplicate@example.com",
         password = "4321",
         name = "두번째유저"
@@ -132,15 +133,15 @@ def test_signup_duplicate_email(client):
 def test_signin_wrong_password(client):
     """잘못된 비밀번호 로그인 실패 응답 검증"""
 
+    auth_client = AuthClient(client)
+
     auth_client.signup(
-        client = client,
         email = "wrong-password@example.com",
         password = "1234",
         name = "비밀번호테스트유저"
     )
 
     response = auth_client.signin(
-        client = client,
         email="wrong-password@example.com",
         password="wrong-password"
     )
@@ -167,8 +168,9 @@ def test_signin_wrong_password(client):
 def test_signin_not_registered_email(client):
     """존재하지 않는 이메일 로그인 실패 응답 검증"""
 
+    auth_client = AuthClient(client)
+
     response = auth_client.signin(
-        client = client,
         email = "not-found@example.com",
         password = "1234"
     )
@@ -198,8 +200,9 @@ def test_signup_invalid_email_format(client):
     models > EmailStr 타입이 자동 검증하는 부분 (공통 에러 응답 사용 X)
     """
 
+    auth_client = AuthClient(client)
+
     response = auth_client.signup(
-        client = client,
         email = "invalid-email",
         password = "1234",
         name = "이메일형식테스트유저"
