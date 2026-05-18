@@ -15,7 +15,8 @@ CREATE_USERS_TABLE = """
         email TEXT UNIQUE NOT NULL,    -- 이메일
         password TEXT NOT NULL,        -- 비밀번호
         name TEXT NOT NULL,            -- 이름
-        point INTEGER NOT NULL         -- 포인트
+        point INTEGER NOT NULL,        -- 포인트
+        created_at TEXT NOT NULL       -- 가입 시간
     );
 """
 
@@ -37,7 +38,8 @@ CREATE_ORDERS_TABLE = """
         product_id TEXT NOT NULL,                   -- 구매한 상품
         quantity INTEGER NOT NULL,                  -- 구매 개수
         total_price INTEGER NOT NULL,               -- 총 가격
-        status TEXT NOT NULL                        -- 상태(예: PAID)
+        status TEXT NOT NULL,                       -- 상태(예: PAID)
+        created_at TEXT NOT NULL                    -- 주문 시간
     );
 """
 
@@ -45,8 +47,8 @@ CREATE_ORDERS_TABLE = """
 # ===================== users =====================
 
 INSERT_USER = """
-    INSERT INTO users (user_id, email, password, name, point)
-    VALUES (?, ?, ?, ?, ?);
+    INSERT INTO users (user_id, email, password, name, point, created_at)
+    VALUES (?, ?, ?, ?, ?, DATETIME('now'));
 """
 
 
@@ -119,8 +121,8 @@ UPDATE_PRODUCT_STOCK = """
 # ===================== orders =====================
 
 INSERT_ORDER = """
-    INSERT INTO orders (user_id, product_id, quantity, total_price, status)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO orders (user_id, product_id, quantity, total_price, status, created_at)
+    VALUES (?, ?, ?, ?, ?, DATETIME('now'))
 """
 
 
