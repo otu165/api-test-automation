@@ -25,6 +25,9 @@ def get_connection():
     """SQLite 데이터베이스 커넥션 생성"""
     connection = sqlite3.connect(DATABASE_NAME)
 
+    # SQLite 외래키(Foreign Key) 기능 활성화
+    connection.execute("PRAGMA foreign_keys = ON")
+
     # 컬럼명을 기준으로 데이터 조회 가능하게 세팅
     # ex) row["user_id"], row["name"] .. 처럼 컬럼명으로 접근할 수 있음
     connection.row_factory = sqlite3.Row
@@ -40,9 +43,9 @@ def init_db():
     cursor = conn.cursor()
 
     # users, products, orders 테이블 생성
-    cursor.execute(sql_queries.CREATE_USERS_TABLE)
-    cursor.execute(sql_queries.CREATE_PRODUCTS_TABLE)
-    cursor.execute(sql_queries.CREATE_ORDERS_TABLE)
+    cursor.execute(sql_queries.CREATE_USER_TABLE)
+    cursor.execute(sql_queries.CREATE_PRODUCT_TABLE)
+    cursor.execute(sql_queries.CREATE_ORDER_TABLE)
 
     # 기본 상품 데이터 추가
     products = [

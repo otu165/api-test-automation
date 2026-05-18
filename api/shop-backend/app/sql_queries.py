@@ -9,38 +9,42 @@ SQLite 데이터베이스에서 사용하는 SQL 쿼리를 모아놓은 파일
 
 # ===================== 테이블 ======================
 
-CREATE_USERS_TABLE = """
+CREATE_USER_TABLE = """
     CREATE TABLE IF NOT EXISTS tb_user (
-        user_id TEXT PRIMARY KEY,      -- 고유 번호(PK)
-        email TEXT UNIQUE NOT NULL,    -- 이메일
-        password TEXT NOT NULL,        -- 비밀번호
-        name TEXT NOT NULL,            -- 이름
-        point INTEGER NOT NULL,        -- 포인트
-        created_at TEXT NOT NULL       -- 가입 시간
-    );
+        user_id TEXT PRIMARY KEY,			-- 회원 ID(PK)
+        email TEXT UNIQUE NOT NULL,			-- 이메일
+        password TEXT NOT NULL,				-- 비밀번호
+        name TEXT NOT NULL,					-- 이름
+        point INTEGER NOT NULL DEFAULT 0,	-- 포인트
+        created_at TEXT NOT NULL			-- 가입 시간
+    )
 """
 
 
-CREATE_PRODUCTS_TABLE = """
+CREATE_PRODUCT_TABLE = """
     CREATE TABLE IF NOT EXISTS tb_product (
-        product_id TEXT PRIMARY KEY,    -- 상품 고유값(PK)
-        name TEXT NOT NULL,             -- 상품 이름
-        price INTEGER NOT NULL,         -- 가격
-        stock INTEGER NOT NULL          -- 재고
-    );
+        product_id TEXT PRIMARY KEY,		-- 상품 ID(PK)
+        name TEXT NOT NULL,					-- 상품명
+        price INTEGER NOT NULL,				-- 가격
+        stock INTEGER NOT NULL,				-- 재고
+        created_at TEXT NOT NULL			-- 등록 시간
+    )
 """
 
 
-CREATE_ORDERS_TABLE = """
+CREATE_ORDER_TABLE = """
     CREATE TABLE IF NOT EXISTS tb_order (
-        order_id INTEGER PRIMARY KEY AUTOINCREMENT, -- 주문 번호(PK, 자동 증가)
-        user_id TEXT NOT NULL,                      -- 주문한 유저
-        product_id TEXT NOT NULL,                   -- 구매한 상품
-        quantity INTEGER NOT NULL,                  -- 구매 개수
-        total_price INTEGER NOT NULL,               -- 총 가격
-        status TEXT NOT NULL,                       -- 상태(예: PAID)
-        created_at TEXT NOT NULL                    -- 주문 시간
-    );
+        order_id TEXT PRIMARY KEY,			-- 주문 ID(PK)
+        user_id TEXT NOT NULL,				-- 주문 회원 ID
+        product_id TEXT NOT NULL,			-- 주문 상품 ID
+        quantity INTEGER NOT NULL,			-- 주문 수량
+        total_price INTEGER NOT NULL,		-- 총 주문 금액
+        status TEXT NOT NULL,				-- 주문 상태(예: PAID)
+        created_at TEXT NOT NULL,			-- 주문 시간
+        
+        FOREIGN KEY(user_id) REFERENCES tb_user(user_id),
+        FOREIGN KEY(product_id) REFERENCES tb_product(product_id)
+    )
 """
 
 
