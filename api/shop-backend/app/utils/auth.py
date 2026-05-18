@@ -19,6 +19,8 @@ from datetime import UTC, datetime, timedelta
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
+from app.exceptions.api_exception import ApiException
+from app.constants import error_codes
 
 load_dotenv()
 
@@ -86,8 +88,10 @@ def verify_access_token(token: str):
 
         # user_id 없으면 에러
         if user_id is None:
-            raise HTTPException(
+            raise ApiException(
                 status_code = status.HTTP_401_UNAUTHORIZED,
+                message = "사용자 인증 실패",
+                code = error_codes.UNAUTHORIZED,
                 detail = "유효하지 않은 토큰입니다."
             )
 
@@ -98,9 +102,11 @@ def verify_access_token(token: str):
         # JWT 검증 실패
         # ㄴ 예시) 토큰 위조, 만료, 형식 오류, 비밀키 불일치 등...
 
-        raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail = "토큰 검증 실패"
+        raise ApiException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            message="사용자 인증 실패",
+            code=error_codes.UNAUTHORIZED,
+            detail="유효하지 않은 토큰입니다."
         )
 
 
