@@ -137,5 +137,19 @@ def test_create_order_with_zero_quantity(
     )
 
     # 상태코드 검증
-    # models.py 에서 quantity: int = Field(gt=0) 에러 체크되는 부분
     assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 구조 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
