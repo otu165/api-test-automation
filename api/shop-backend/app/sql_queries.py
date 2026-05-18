@@ -10,7 +10,7 @@ SQLite 데이터베이스에서 사용하는 SQL 쿼리를 모아놓은 파일
 # ===================== 테이블 ======================
 
 CREATE_USERS_TABLE = """
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE IF NOT EXISTS tb_user (
         user_id TEXT PRIMARY KEY,      -- 고유 번호(PK)
         email TEXT UNIQUE NOT NULL,    -- 이메일
         password TEXT NOT NULL,        -- 비밀번호
@@ -22,7 +22,7 @@ CREATE_USERS_TABLE = """
 
 
 CREATE_PRODUCTS_TABLE = """
-    CREATE TABLE IF NOT EXISTS products (
+    CREATE TABLE IF NOT EXISTS tb_product (
         product_id TEXT PRIMARY KEY,    -- 상품 고유값(PK)
         name TEXT NOT NULL,             -- 상품 이름
         price INTEGER NOT NULL,         -- 가격
@@ -32,7 +32,7 @@ CREATE_PRODUCTS_TABLE = """
 
 
 CREATE_ORDERS_TABLE = """
-    CREATE TABLE IF NOT EXISTS orders (
+    CREATE TABLE IF NOT EXISTS tb_order (
         order_id INTEGER PRIMARY KEY AUTOINCREMENT, -- 주문 번호(PK, 자동 증가)
         user_id TEXT NOT NULL,                      -- 주문한 유저
         product_id TEXT NOT NULL,                   -- 구매한 상품
@@ -44,24 +44,24 @@ CREATE_ORDERS_TABLE = """
 """
 
 
-# ===================== users =====================
+# ===================== tb_user =====================
 
 INSERT_USER = """
-    INSERT INTO users (user_id, email, password, name, point, created_at)
+    INSERT INTO tb_user (user_id, email, password, name, point, created_at)
     VALUES (?, ?, ?, ?, ?, DATETIME('now'));
 """
 
 
 SELECT_USER_BY_EMAIL = """
     SELECT email
-      FROM users
+      FROM tb_user
      WHERE email = ?
 """
 
 
 SELECT_USER_BY_EMAIL_AND_PASSWORD = """
     SELECT user_id
-      FROM users
+      FROM tb_user
      WHERE 1=1
        AND email = ?
        AND password = ?
@@ -70,13 +70,13 @@ SELECT_USER_BY_EMAIL_AND_PASSWORD = """
 
 SELECT_USER_BY_ID = """
     SELECT user_id, name, point
-      FROM users
+      FROM tb_user
      WHERE user_id = ?
 """
 
 
 UPDATE_USER_POINT = """
-    UPDATE users
+    UPDATE tb_user
        SET point = ?
      WHERE user_id = ?
 """
@@ -84,49 +84,49 @@ UPDATE_USER_POINT = """
 
 SELECT_USER_POINT_BY_ID = """
     SELECT point
-      FROM users
+      FROM tb_user
      WHERE user_id = ?
 """
 
 
-# ===================== products =====================
+# ===================== tb_product =====================
 
 
 INSERT_PRODUCT = """
-    INSERT OR IGNORE INTO products (product_id, name, price, stock)
+    INSERT OR IGNORE INTO tb_product (product_id, name, price, stock)
     VALUES (?, ?, ?, ?)
 """
 
 
 SELECT_ALL_PRODUCTS = """
     SELECT product_id, name, price, stock
-      FROM products
+      FROM tb_product
 """
 
 
 SELECT_PRODUCT_BY_ID = """
     SELECT product_id, name, price, stock
-      FROM products
+      FROM tb_product
      WHERE product_id = ?
 """
 
 
 UPDATE_PRODUCT_STOCK = """
-    UPDATE products
+    UPDATE tb_product
        SET stock = ?
      WHERE product_id = ?
 """
 
 
-# ===================== orders =====================
+# ===================== tb_order =====================
 
 INSERT_ORDER = """
-    INSERT INTO orders (user_id, product_id, quantity, total_price, status, created_at)
+    INSERT INTO tb_order (user_id, product_id, quantity, total_price, status, created_at)
     VALUES (?, ?, ?, ?, ?, DATETIME('now'))
 """
 
 
 SELECT_ALL_ORDERS = """
     SELECT order_id, user_id, product_id, quantity, total_price, status
-      FROM orders
+      FROM tb_order
 """

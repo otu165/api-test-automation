@@ -49,13 +49,13 @@ def reset_test_database():
         cursor = connection.cursor()
 
         # users 테이블 데이터 삭제
-        cursor.execute("DELETE FROM users")
+        cursor.execute("DELETE FROM tb_user")
 
         # products 테이블 데이터 삭제
-        cursor.execute("DELETE FROM products")
+        cursor.execute("DELETE FROM tb_product")
 
         # orders 테이블 데이터 삭제
-        cursor.execute("DELETE FROM orders")
+        cursor.execute("DELETE FROM tb_order")
 
         # 테스트용 기본 상품 데이터 재생성
         products = [
