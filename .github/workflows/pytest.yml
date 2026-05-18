@@ -1,4 +1,4 @@
-name: pytest
+name: shop-backend API Tests
 
 on:
   push:
