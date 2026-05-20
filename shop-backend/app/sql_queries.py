@@ -143,6 +143,15 @@ UPDATE_PRODUCT_STOCK = """
 """
 
 
+# 주문 수량 <= 재고 상태일 때만 재고를 차감한다
+DECREASE_PRODUCT_STOCK_IF_ENOUGH = """
+    UPDATE tb_product
+       SET stock = stock - ?
+     WHERE product_id = ?
+       AND stock >= ?
+"""
+
+
 # ===================== tb_order =====================
 
 INSERT_ORDER = """

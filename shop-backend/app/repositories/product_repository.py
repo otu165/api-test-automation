@@ -94,3 +94,24 @@ def update_product_stock(
 
     finally:
         connection.close()
+
+
+def decrease_product_stock_if_enough(
+        product_id: str,
+        quantity: int,
+        connection: Optional[sqlite3.Connection]
+) -> bool:
+    """
+    상품 재고가 충분할 때만 상품 재고 차감
+    반환값:
+    - True : 재고 차감 성공
+    - False : 재고 부족으로 차감 실패
+    """
+
+    cursor = connection.execute(
+        sql_queries.DECREASE_PRODUCT_STOCK_IF_ENOUGH,
+        (quantity, product_id, quantity)
+    )
+
+    # rowcount = 직전에 실행한 SQL 이 실제로 영향을 준 행(row) 개수
+    return cursor.rowcount == 1

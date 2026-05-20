@@ -63,15 +63,6 @@ def insert_order(
     # 총 가격 계산 (가격 X 수량)
     total_price = product["price"] * quantity
 
-    # 상품 재고 확인
-    if product["stock"] < quantity:
-        raise ApiException(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            message = "주문 실패",
-            code = error_codes.INSUFFICIENT_STOCK,
-            detail = "요청된 상품의 재고가 부족합니다."
-        )
-
     # 잔여 포인트 확인
     if user["point"] < total_price:
         raise ApiException(
@@ -89,9 +80,20 @@ def insert_order(
         new_point = user["point"] - total_price
         user_repository.update_user_point(user_id, new_point, conn)
 
-        # 재고 차감
-        new_stock = product["stock"] - quantity
-        product_repository.update_product_stock(product_id, new_stock, conn)
+        # 재고 차감 (DB 조건부 UPDATE)
+        is_stock_decreased = product_repository.decrease_product_stock_if_enough(
+            product_id = product_id,
+            quantity = quantity,
+            connection = conn
+        )
+
+        if not is_stock_decreased:
+            raise ApiException(
+                status_code = status.HTTP_400_BAD_REQUEST,
+                message = "주문 실패",
+                code = error_codes.INSUFFICIENT_STOCK,
+                detail = "요청된 상품의 재고가 부족합니다."
+            )
 
         # order_id 생성
         order_id = str(uuid.uuid4())
