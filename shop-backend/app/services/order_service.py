@@ -195,6 +195,27 @@ def cancel_order(order_id: str):
             connection = conn
         )
 
+        # 주문 상품 조회
+        product = product_repository.select_product_by_id(order["product_id"])
+
+        if product is None:
+            raise ApiException(
+                status_code = status.HTTP_404_NOT_FOUND,
+                message = "주문 취소 실패",
+                code = error_codes.PRODUCT_NOT_FOUND,
+                detail = "주문한 상품을 찾을 수 없습니다."
+            )
+
+        # 주문 수량만큼 상품 재고 복구
+
+        restored_stock = product["stock"] + order["quantity"]
+
+        product_repository.update_product_stock(
+            product_id=order["product_id"],
+            new_stock=restored_stock,
+            connection=conn
+        )
+
         # 주문 상태 변경
         order_repository.update_order_stuats(
             order_id,

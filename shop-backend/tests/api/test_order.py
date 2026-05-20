@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
 from app.constants import error_codes
+from app.repositories import product_repository
 
 
 def test_create_order_success(
@@ -374,3 +375,51 @@ def test_cancel_order_restore_point(
     assert restored_point_body["data"]["point"] == before_point
 
 
+def test_cancel_order_restore_stock(
+        client: TestClient,
+        access_token: str
+):
+    """주문 취소 시 상품 재고 복구 검증"""
+
+    order_client = OrderClient(client, access_token)
+
+    product_id = "KB1001"
+    quantity = 1
+
+    # 주문 전 재고 조회
+    before_product = product_repository.select_product_by_id(product_id)
+    before_stock = before_product["stock"]
+
+    # 주문 생성
+    create_order_res = order_client.create_order(
+        product_id = product_id,
+        quantity = quantity
+    )
+
+    # 상태코드 검증
+    assert create_order_res.status_code == 201
+
+    create_order_body = create_order_res.json()
+
+    # 데이터 검증
+    assert "data" in create_order_body
+    assert "order_id" in create_order_body["data"]
+
+    order_id = create_order_body["data"]["order_id"]
+
+    # 주문 후 재고 차감 확인
+    after_product = product_repository.select_product_by_id(product_id)
+    after_stock = after_product["stock"]
+
+    assert after_stock == before_stock - quantity
+
+    # 주문 취소
+    order_cancel_res = order_client.create_order_cancel(order_id)
+
+    # 상태코드 확인
+    assert order_cancel_res.status_code == 200
+
+    # 주문 취소 후 상품 재고 원복 확인
+    restored_product = product_repository.select_product_by_id(product_id)
+
+    assert before_stock == restored_product["stock"]
