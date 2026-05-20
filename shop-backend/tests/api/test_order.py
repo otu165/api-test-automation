@@ -14,7 +14,6 @@
 from fastapi.testclient import TestClient
 from concurrent.futures import ThreadPoolExecutor
 
-from tests.clients.auth_client import AuthClient
 from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
 from app.constants import error_codes
@@ -22,15 +21,12 @@ from app.repositories import product_repository
 
 
 def test_create_order_success(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """주문 생성 성공 응답 검증"""
 
     product_id = "KB1001"
     quantity = 1
-
-    order_client = OrderClient(client, access_token)
 
     response = order_client.create_order(
         product_id = product_id,
@@ -96,12 +92,9 @@ def test_create_order_with_invalid_token(
 
 
 def test_create_order_with_not_found_product(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """존재하지 않는 상품 주문 실패 응답 검증"""
-
-    order_client = OrderClient(client, access_token)
 
     response = order_client.create_order(
         product_id = "NOTFOUND",
@@ -128,12 +121,9 @@ def test_create_order_with_not_found_product(
 
 
 def test_create_order_with_zero_quantity(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """주문 수량 0 입력 시 validation 실패 응답 검증"""
-
-    order_client = OrderClient(client, access_token)
 
     response = order_client.create_order(
         product_id = "MS1001",
@@ -161,32 +151,13 @@ def test_create_order_with_zero_quantity(
 
 
 def test_cancel_order_success(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient,
+        created_order_id: str
 ):
     """주문 취소 성공 응답 검증"""
 
-    order_client = OrderClient(client, access_token)
-
-    # 주문 생성
-    create_order_res = order_client.create_order(
-        product_id = "MS1001",
-        quantity = 1
-    )
-
-    # 상태코드 확인
-    assert create_order_res.status_code == 201
-
-    create_order_body = create_order_res.json()
-
-    # 데이터 확인
-    assert "data" in create_order_body
-    assert "order_id" in create_order_body["data"]
-
-    order_id = create_order_body["data"]["order_id"]
-
     # 주문 취소
-    cancel_order_res = order_client.cancel_order(order_id)
+    cancel_order_res = order_client.cancel_order(created_order_id)
 
     # 상태코드 확인
     assert cancel_order_res.status_code == 200
@@ -204,7 +175,7 @@ def test_cancel_order_success(
 
     # data > order_id 검증
     assert "order_id" in cancel_order_body["data"]
-    assert cancel_order_body["data"]["order_id"] == order_id
+    assert cancel_order_body["data"]["order_id"] == created_order_id
 
     # data > status 검증
     assert "status" in cancel_order_body["data"]
@@ -212,12 +183,9 @@ def test_cancel_order_success(
 
 
 def test_cancel_order_not_found(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """존재하지 않는 주문 취소 실패"""
-
-    order_client = OrderClient(client, access_token)
 
     # 존재하지 않는 주문 취소 요청
     response = order_client.cancel_order(
@@ -245,38 +213,19 @@ def test_cancel_order_not_found(
 
 
 def test_cancel_order_already_canceled(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient,
+        created_order_id: str
 ):
     """이미 취소된 주문 재취소 실패 검증"""
 
-    order_client = OrderClient(client, access_token)
-
-    # 주문 생성
-    create_order_res = order_client.create_order(
-        product_id = "MS1001",
-        quantity = 1
-    )
-
-    # 상태코드 검증
-    assert create_order_res.status_code == 201
-
-    # order_id 꺼내기
-    create_order_body = create_order_res.json()
-
-    assert "data" in create_order_body
-    assert "order_id" in create_order_body["data"]
-
-    order_id = create_order_body["data"]["order_id"]
-
     # 주문 취소
-    cancel_order_res = order_client.cancel_order(order_id)
+    cancel_order_res = order_client.cancel_order(created_order_id)
 
     # 상태코드 검증
     assert cancel_order_res.status_code == 200
 
     # 동일 주문 재취소
-    double_cancel_order_res = order_client.cancel_order(order_id)
+    double_cancel_order_res = order_client.cancel_order(created_order_id)
 
     # 상태코드 검증
     assert double_cancel_order_res.status_code == 400
@@ -299,12 +248,10 @@ def test_cancel_order_already_canceled(
 
 
 def test_cancel_order_restore_point(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient,
+        point_client: PointClient
 ):
     """주문 취소 시 계정 포인트 복구 검증"""
-
-    point_client = PointClient(client, access_token)
 
     # 포인트 조회
     before_point_res = point_client.get_point()
@@ -321,8 +268,6 @@ def test_cancel_order_restore_point(
     before_point = before_point_body["data"]["point"]
 
     # 주문 생성
-    order_client = OrderClient(client, access_token)
-
     create_order_res = order_client.create_order(
         product_id = "KB1001",
         quantity = 1
@@ -378,12 +323,9 @@ def test_cancel_order_restore_point(
 
 
 def test_cancel_order_restore_stock(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """주문 취소 시 상품 재고 복구 검증"""
-
-    order_client = OrderClient(client, access_token)
 
     product_id = "KB1001"
     quantity = 1
@@ -394,8 +336,8 @@ def test_cancel_order_restore_stock(
 
     # 주문 생성
     create_order_res = order_client.create_order(
-        product_id = product_id,
-        quantity = quantity
+        product_id=product_id,
+        quantity=quantity
     )
 
     # 상태코드 검증
@@ -429,12 +371,9 @@ def test_cancel_order_restore_stock(
 
 
 def test_get_my_orders_success(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """내 주문 히스토리 조회 API 성공 검증"""
-
-    order_client = OrderClient(client, access_token)
 
     # 키보드 주문 생성
     kb_order_res = order_client.create_order(
@@ -493,36 +432,16 @@ def test_get_my_orders_success(
 
 
 def test_get_order_detail_success(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient,
+        created_order_id: str
 ):
     """내 주문 상세 조회 성공 검증"""
-
-    order_client = OrderClient(client, access_token)
 
     product_id = "KB1001"
     quantity = 1
 
-    # 주문 생성
-    create_order_res = order_client.create_order(
-        product_id = product_id,
-        quantity = quantity
-    )
-
-    # 상태코드 검증
-    assert create_order_res.status_code == 201
-
-    # 데이터 검증
-    create_order_body = create_order_res.json()
-
-    assert create_order_body["success"] is True
-    assert "data" in create_order_body
-    assert "order_id" in create_order_body["data"]
-
-    order_id = create_order_body["data"]["order_id"]
-
     # 주문 상세 조회
-    detail_res = order_client.get_order_detail(order_id)
+    detail_res = order_client.get_order_detail(created_order_id)
 
     # 상태코드 검증
     assert detail_res.status_code == 200
@@ -539,7 +458,7 @@ def test_get_order_detail_success(
     assert isinstance(detail_body["data"], dict)
 
     assert "order_id" in detail_body["data"]
-    assert detail_body["data"]["order_id"] == order_id
+    assert detail_body["data"]["order_id"] == created_order_id
 
     assert "product_id" in detail_body["data"]
     assert detail_body["data"]["product_id"] == product_id
@@ -553,61 +472,21 @@ def test_get_order_detail_success(
 
 def test_cancel_other_user_order_not_found(
         client: TestClient,
-        access_token: str
+        created_order_id: str,
+        second_access_token: str
 ):
     """내가 아닌 다른 사용자의 주문 취소 실패 검증"""
 
-    # A 사용자(access_token fixture) 로 주문 생성
-    A_order_client = OrderClient(client, access_token)
+    # A 사용자 order_id
+    a_order_id = created_order_id
 
-    create_order_res = A_order_client.create_order(
-        product_id = "KB1001",
-        quantity = 1
-    )
-
-    # 상태코드 검증
-    assert create_order_res.status_code == 201
-
-    create_order_body = create_order_res.json()
-
-    # 데이터 검증
-    assert "data" in create_order_body
-    assert "order_id" in create_order_body["data"]
-
-    A_order_id = create_order_body["data"]["order_id"]
-
-    # B 사용자 회원가입 & 로그인
-    B_auth_client = AuthClient(client)
-
-    B_email = "B-email@example.com"
-    B_password = "1234"
-
-    signup_res = B_auth_client.signup(
-        email = B_email,
-        password = B_password,
-        name = "user B"
-    )
-
-    # 상태코드 검증
-    assert signup_res.status_code == 201
-
-    signin_res = B_auth_client.signin(
-        email = B_email,
-        password = B_password
-    )
-
-    # 상태코드 검증
-    assert signin_res.status_code == 200
-
-    # 데이터 검증
-    assert "data" in signin_res.json()
-    assert "access_token" in signin_res.json()["data"]
-    B_access_token = signin_res.json()["data"]["access_token"]
+    # B 사용자 access_token
+    b_access_token = second_access_token
 
     # B 사용자로 A 사용자의 주문 취소 시도
-    B_order_client = OrderClient(client, B_access_token)
+    b_order_client = OrderClient(client, b_access_token)
 
-    response = B_order_client.cancel_order(A_order_id)
+    response = b_order_client.cancel_order(a_order_id)
 
     # 상태코드 검증
     assert response.status_code == 404 # B의 order_id 가 아니므로 요청한 주문을 찾을 수 없음
@@ -629,8 +508,7 @@ def test_cancel_other_user_order_not_found(
 
 
 def test_create_order_concurrently_with_limited_stock(
-        client: TestClient,
-        access_token: str
+        order_client: OrderClient
 ):
     """
     상품 재고가 1개일 때, 동시 주문 요청 1개 성공 검증
@@ -649,17 +527,13 @@ def test_create_order_concurrently_with_limited_stock(
     # 내부(로컬) 함수
     # ㄴ 역할 : 주문 요청 1번 보내기
     def request_order():
-        order_client = OrderClient(
-            client = client,
-            access_token = access_token
-        )
 
         return order_client.create_order(
             product_id = product_id,
             quantity = 1
         )
 
-    # 동시에 5번 주문 요청
+    # 동시에 request_count 번 주문 요청
     with ThreadPoolExecutor(max_workers = request_count) as executor:
         responses = list(
             executor.map(
