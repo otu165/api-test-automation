@@ -184,6 +184,20 @@ SELECT_ORDER_BY_ID = """
 """
 
 
+SELECT_ORDER_BY_ID_AND_USER_ID = """
+    SELECT order_id
+         , user_id
+         , product_id
+         , quantity
+         , total_price
+         , status
+         , created_at
+      FROM tb_order
+     WHERE user_id = ?
+       AND order_id = ?
+"""
+
+
 UPDATE_ORDER_STATUS = """
     UPDATE tb_order
        SET status = ?
@@ -203,3 +217,5 @@ SELECT_ORDERS_BY_USER_ID = """
      WHERE user_id = ?
      ORDER BY created_at DESC
 """
+
+

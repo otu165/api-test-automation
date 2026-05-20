@@ -488,3 +488,63 @@ def test_get_my_orders_success(
 
     assert kb_order_id in order_ids
     assert ms_order_id in order_ids
+
+
+def test_get_order_detail_success(
+        client: TestClient,
+        access_token: str
+):
+    """내 주문 상세 조회 성공 검증"""
+
+    order_client = OrderClient(client, access_token)
+
+    product_id = "KB1001"
+    quantity = 1
+
+    # 주문 생성
+    create_order_res = order_client.create_order(
+        product_id = product_id,
+        quantity = quantity
+    )
+
+    # 상태코드 검증
+    assert create_order_res.status_code == 201
+
+    # 데이터 검증
+    create_order_body = create_order_res.json()
+
+    assert create_order_body["success"] is True
+    assert "data" in create_order_body
+    assert "order_id" in create_order_body["data"]
+
+    order_id = create_order_body["data"]["order_id"]
+
+    # 주문 상세 조회
+    detail_res = order_client.get_order_detail(order_id)
+
+    # 상태코드 검증
+    assert detail_res.status_code == 200
+
+    detail_body = detail_res.json()
+
+    # 공통 응답 구조(success_response) 검증
+    assert detail_body["success"] is True
+    assert detail_body["message"] == "주문 상세 조회 성공"
+    assert detail_body["error"] is None
+
+    # data 구조 검증
+    assert "data" in detail_body
+    assert isinstance(detail_body["data"], dict)
+
+    assert "order_id" in detail_body["data"]
+    assert detail_body["data"]["order_id"] == order_id
+
+    assert "product_id" in detail_body["data"]
+    assert detail_body["data"]["product_id"] == product_id
+
+    assert "quantity" in detail_body["data"]
+    assert detail_body["data"]["quantity"] == quantity
+
+    assert "status" in detail_body["data"]
+    assert detail_body["data"]["status"] == "PAID"
+

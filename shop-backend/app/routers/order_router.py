@@ -43,6 +43,18 @@ def get_orders(
     return order_service.select_orders(current_user_id)
 
 
+@router.get("/{order_id}")
+def get_order_detail(
+        order_id: str,
+        current_user_id: str = Depends(get_current_user_id)
+):
+    """내 주문 상세 조회 API"""
+    return order_service.select_order_detail(
+        order_id = order_id,
+        user_id = current_user_id
+    )
+
+
 @router.post("/{order_id}/cancel")
 def cancel_order(
         order_id: str,

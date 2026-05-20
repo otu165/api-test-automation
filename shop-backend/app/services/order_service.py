@@ -245,3 +245,29 @@ def select_orders(user_id: str):
             "count" : len(orders)
         }
     )
+
+
+
+def select_order_detail(
+        order_id: str,
+        user_id: str
+) -> dict:
+    """내 주문 상세 조회"""
+
+    order = order_repository.select_order_by_id_and_user_id(
+        order_id = order_id,
+        user_id = user_id
+    )
+
+    if order is None:
+        raise ApiException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            message = "주문 상세 조회 실패",
+            code = error_codes.ORDER_NOT_FOUND,
+            detail = "요청된 주문을 찾을 수 없습니다."
+        )
+
+    return success_response(
+        message = "주문 상세 조회 성공",
+        data = order
+    )

@@ -149,4 +149,40 @@ def select_orders_by_user_id(
 
 
 
+def select_order_by_id_and_user_id(
+        order_id: str,
+        user_id: str,
+        connection: Optional[sqlite3.Connection] = None
+):
+    """
+    order_id & user_id 로 주문 단건 조회
+    (order_id 만 사용해도 단건 조회가 가능하지만, order_id 를 알아내면
+    타인의 주문도 조회 가능한 보안상의 이슈가 있기 때문에 user_id 를 함께 조건으로 사용한다)
+    """
+
+    params = (
+        user_id,
+        order_id
+    )
+
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute(sql_queries.SELECT_ORDER_BY_ID_AND_USER_ID, params)
+
+        order = cursor.fetchone()
+
+        return dict(order) if order else None
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(sql_queries.SELECT_ORDER_BY_ID_AND_USER_ID, params)
+
+        order = cursor.fetchone()
+
+        return dict(order) if order else None
+
+    finally:
+        connection.close()
 

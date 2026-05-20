@@ -38,6 +38,15 @@ class OrderClient(BaseClient):
         return self.get("/orders")
 
 
+    def get_order_detail(
+            self,
+            order_id: str
+    ):
+        """내 주문 상세 조회 API 요청"""
+
+        return self.get(f"/orders/{order_id}")
+
+
     def cancel_order(
             self,
             order_id: str
