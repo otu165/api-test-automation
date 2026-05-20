@@ -11,7 +11,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: api/shop-backend
+        working-directory: shop-backend
 
     steps:
       - name: Checkout repository
