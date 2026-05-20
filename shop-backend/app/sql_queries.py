@@ -169,3 +169,23 @@ SELECT_ALL_ORDERS = """
          , created_at
       FROM tb_order
 """
+
+
+SELECT_ORDER_BY_ID = """
+    SELECT order_id
+         , user_id
+         , product_id
+         , quantity
+         , total_price
+         , status
+         , created_at
+      FROM tb_order
+     WHERE order_id = ?
+"""
+
+
+UPDATE_ORDER_STATUS = """
+    UPDATE tb_order
+       SET status = ?
+     WHERE order_id = ?
+"""

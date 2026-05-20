@@ -149,3 +149,63 @@ def select_orders() -> dict:
     )
 
 
+def cancel_order(order_id: str):
+    """주문 취소"""
+
+    conn = get_connection()
+
+    try:
+        # 주문 존재 확인
+        order = order_repository.select_order_by_id(order_id, conn)
+
+        if order is None:
+            raise ApiException(
+                status_code = status.HTTP_404_NOT_FOUND,
+                message = "주문 취소 실패",
+                code = error_codes.ORDER_NOT_FOUND,
+                detail = "요청된 주문을 찾을 수 없습니다."
+            )
+
+        # (취소 전) 현재 주문 상태 확인
+        if order["status"] == "CANCELED":
+            raise ApiException(
+                status_code = status.HTTP_400_BAD_REQUEST,
+                message = "주문 취소 실패",
+                code = error_codes.ORDER_ALREADY_CANCELED,
+                detail = "이미 취소된 주문입니다."
+            )
+
+        # 주문 상태 변경
+        order_repository.update_order_stuats(
+            order_id,
+            "CANCELED",
+            conn
+        )
+
+        conn.commit()
+
+        # (취소 후) 변경된 주문 조회
+        canceled_order = order_repository.select_order_by_id(order_id, conn)
+
+        return success_response(
+            message = "주문 취소 성공",
+            data = canceled_order
+        )
+
+    except ApiException:
+        conn.rollback()
+        raise
+
+    except Exception:
+        conn.rollback()
+        raise ApiException(
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message = "주문 취소 실패",
+            code = error_codes.INTERNAL_SERVER_ERROR,
+            detail = "서버 내부 오류가 발생했습니다."
+        )
+
+    finally:
+        conn.close()
+
+

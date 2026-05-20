@@ -69,3 +69,61 @@ def select_all_orders():
     conn.close()
 
     return [dict(order) for order in orders]
+
+
+def select_order_by_id(
+    order_id: str,
+    connection: Optional[sqlite3.Connection] = None
+):
+    "주문 ID 로 주문 단건 조회"
+
+    # DB 커넥션 전달된 경우
+    if connection is not None:
+        cursor = connection.cursor()
+        cursor.execute(sql_queries.SELECT_ORDER_BY_ID, (order_id, ))
+
+        order = cursor.fetchone()
+
+        return dict(order) if order else None
+
+    # DB 커넥션이 없는 경우
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(sql_queries.SELECT_ORDER_BY_ID, (order_id, ))
+
+        order = cursor.fetchone()
+
+        return dict(order) if order else None
+
+    finally:
+        connection.close()
+
+
+def update_order_stuats(
+        order_id: str,
+        status: str,
+        connection: Optional[sqlite3.Connection] = None
+):
+    """주문 상태 변경"""
+
+    # DB 커넥션 전달된 경우
+    if connection is not None:
+        connection.execute(sql_queries.UPDATE_ORDER_STATUS, (status, order_id))
+        return
+
+    connection = get_connection()
+
+    try:
+        connection.execute(sql_queries.UPDATE_ORDER_STATUS, (status, order_id))
+        connection.commit() # 데이터 수정이므로 commit 필요
+
+        return
+
+    finally:
+        connection.close()
+
+
+
+
