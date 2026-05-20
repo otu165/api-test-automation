@@ -132,14 +132,21 @@ def insert_order(
         conn.close()
 
 
-def cancel_order(order_id: str):
+def cancel_order(
+        order_id: str,
+        user_id: str
+):
     """주문 취소"""
 
     conn = get_connection()
 
     try:
         # 주문 존재 확인
-        order = order_repository.select_order_by_id(order_id, conn)
+        order = order_repository.select_order_by_id_and_user_id(
+            order_id = order_id,
+            user_id = user_id,
+            connection = conn
+        )
 
         if order is None:
             raise ApiException(

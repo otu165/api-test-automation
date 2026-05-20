@@ -62,6 +62,9 @@ def cancel_order(
 ):
     """주문 취소 API"""
 
-    return order_service.cancel_order(order_id)
+    return order_service.cancel_order(
+        order_id = order_id,
+        user_id = current_user_id
+    )
 
 

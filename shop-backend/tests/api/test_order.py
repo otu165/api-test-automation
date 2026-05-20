@@ -13,6 +13,7 @@
 
 from fastapi.testclient import TestClient
 
+from tests.clients.auth_client import AuthClient
 from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
 from app.constants import error_codes
@@ -547,4 +548,82 @@ def test_get_order_detail_success(
 
     assert "status" in detail_body["data"]
     assert detail_body["data"]["status"] == "PAID"
+
+
+def test_cancel_other_user_order_not_found(
+        client: TestClient,
+        access_token: str
+):
+    """내가 아닌 다른 사용자의 주문 취소 실패 검증"""
+
+    # A 사용자(access_token fixture) 로 주문 생성
+    A_order_client = OrderClient(client, access_token)
+
+    create_order_res = A_order_client.create_order(
+        product_id = "KB1001",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert create_order_res.status_code == 201
+
+    create_order_body = create_order_res.json()
+
+    # 데이터 검증
+    assert "data" in create_order_body
+    assert "order_id" in create_order_body["data"]
+
+    A_order_id = create_order_body["data"]["order_id"]
+
+    # B 사용자 회원가입 & 로그인
+    B_auth_client = AuthClient(client)
+
+    B_email = "B-email@example.com"
+    B_password = "1234"
+
+    signup_res = B_auth_client.signup(
+        email = B_email,
+        password = B_password,
+        name = "user B"
+    )
+
+    # 상태코드 검증
+    assert signup_res.status_code == 201
+
+    signin_res = B_auth_client.signin(
+        email = B_email,
+        password = B_password
+    )
+
+    # 상태코드 검증
+    assert signin_res.status_code == 200
+
+    # 데이터 검증
+    assert "data" in signin_res.json()
+    assert "access_token" in signin_res.json()["data"]
+    B_access_token = signin_res.json()["data"]["access_token"]
+
+    # B 사용자로 A 사용자의 주문 취소 시도
+    B_order_client = OrderClient(client, B_access_token)
+
+    response = B_order_client.cancel_order(A_order_id)
+
+    # 상태코드 검증
+    assert response.status_code == 404 # B의 order_id 가 아니므로 요청한 주문을 찾을 수 없음
+
+    body = response.json()
+
+    # 데이터 검증
+    assert body["success"] is False
+    assert body["message"] == "주문 취소 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+
 
