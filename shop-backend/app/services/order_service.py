@@ -175,6 +175,26 @@ def cancel_order(order_id: str):
                 detail = "이미 취소된 주문입니다."
             )
 
+        # 주문을 한 사용자 조회
+        user = user_repository.select_user_by_id(order["user_id"])
+
+        if user is None:
+            raise ApiException(
+                status_code = status.HTTP_404_NOT_FOUND,
+                message = "주문 취소 실패",
+                code = error_codes.USER_NOT_FOUND,
+                detail = "주문한 사용자를 찾을 수 없습니다."
+            )
+
+        # 주문 금액만큼 포인트 복구
+        restored_point = user["point"] + order["total_price"]
+
+        user_repository.update_user_point(
+            user_id = order["user_id"],
+            new_point = restored_point,
+            connection = conn
+        )
+
         # 주문 상태 변경
         order_repository.update_order_stuats(
             order_id,

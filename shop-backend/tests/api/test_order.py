@@ -14,6 +14,7 @@
 from fastapi.testclient import TestClient
 
 from tests.clients.order_client import OrderClient
+from tests.clients.point_client import PointClient
 from app.constants import error_codes
 
 
@@ -291,3 +292,85 @@ def test_cancel_order_already_canceled(
     # error > code 검증
     assert "code" in dco_body["error"]
     assert dco_body["error"]["code"] == error_codes.ORDER_ALREADY_CANCELED
+
+
+
+def test_cancel_order_restore_point(
+        client: TestClient,
+        access_token: str
+):
+    """주문 취소 시 계정 포인트 복구 검증"""
+
+    point_client = PointClient(client, access_token)
+
+    # 포인트 조회
+    before_point_res = point_client.get_point()
+
+    # 상태코드 검증
+    assert before_point_res.status_code == 200
+
+    before_point_body = before_point_res.json()
+
+    # 응답 검증
+    assert "data" in before_point_body
+    assert "point" in before_point_body["data"]
+
+    before_point = before_point_body["data"]["point"]
+
+    # 주문 생성
+    order_client = OrderClient(client, access_token)
+
+    create_order_res = order_client.create_order(
+        product_id = "KB1001",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert create_order_res.status_code == 201
+
+    create_order_body = create_order_res.json()
+
+    # 데이터 검증
+    assert "data" in create_order_body
+    assert "order_id" in create_order_body["data"]
+    assert "total_price" in create_order_body["data"]
+
+    order_id = create_order_body["data"]["order_id"]
+    total_price = create_order_body["data"]["total_price"]
+
+    # 주문 후 포인트 차감 검증
+    after_point_res = point_client.get_point()
+
+    # 상태코드 검증
+    assert after_point_res.status_code == 200
+
+    after_point_body = after_point_res.json()
+
+    # 응답 검증
+    assert "data" in after_point_body
+    assert "point" in after_point_body["data"]
+
+    after_point = after_point_body["data"]["point"]
+
+    assert after_point == before_point - total_price
+
+    # 주문 취소
+    cancel_order_res = order_client.create_order_cancel(order_id)
+
+    # 상태코드 확인
+    assert cancel_order_res.status_code == 200
+
+    # 포인트 복구 확인
+    restored_point_res = point_client.get_point()
+
+    # 상태코드 확인
+    assert restored_point_res.status_code == 200
+
+    restored_point_body = restored_point_res.json()
+
+    # 데이터 확인
+    assert "data" in restored_point_body
+    assert "point" in restored_point_body["data"]
+    assert restored_point_body["data"]["point"] == before_point
+
+
