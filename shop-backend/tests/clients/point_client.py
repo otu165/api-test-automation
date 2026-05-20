@@ -21,5 +21,5 @@ class PointClient(BaseClient):
         """포인트 조회 API 요청"""
 
         return self.get(
-            "/points/points",
+            "/points",
         )

@@ -34,7 +34,7 @@ def charge_point(
     )
 
 
-@router.get("/points")
+@router.get("")
 def get_point(
         current_user_id: str = Depends(get_current_user_id)
 ):

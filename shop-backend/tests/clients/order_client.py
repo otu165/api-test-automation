@@ -32,7 +32,7 @@ class OrderClient(BaseClient):
         )
 
 
-    def create_order_cancel(
+    def cancel_order(
             self,
             order_id: str
     ):

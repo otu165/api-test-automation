@@ -184,7 +184,7 @@ def test_cancel_order_success(
     order_id = create_order_body["data"]["order_id"]
 
     # 주문 취소
-    cancel_order_res = order_client.create_order_cancel(order_id)
+    cancel_order_res = order_client.cancel_order(order_id)
 
     # 상태코드 확인
     assert cancel_order_res.status_code == 200
@@ -218,7 +218,7 @@ def test_cancel_order_not_found(
     order_client = OrderClient(client, access_token)
 
     # 존재하지 않는 주문 취소 요청
-    response = order_client.create_order_cancel(
+    response = order_client.cancel_order(
         order_id = "ORDER-NOT-FOUND"
     )
 
@@ -268,13 +268,13 @@ def test_cancel_order_already_canceled(
     order_id = create_order_body["data"]["order_id"]
 
     # 주문 취소
-    cancel_order_res = order_client.create_order_cancel(order_id)
+    cancel_order_res = order_client.cancel_order(order_id)
 
     # 상태코드 검증
     assert cancel_order_res.status_code == 200
 
     # 동일 주문 재취소
-    double_cancel_order_res = order_client.create_order_cancel(order_id)
+    double_cancel_order_res = order_client.cancel_order(order_id)
 
     # 상태코드 검증
     assert double_cancel_order_res.status_code == 400
@@ -356,7 +356,7 @@ def test_cancel_order_restore_point(
     assert after_point == before_point - total_price
 
     # 주문 취소
-    cancel_order_res = order_client.create_order_cancel(order_id)
+    cancel_order_res = order_client.cancel_order(order_id)
 
     # 상태코드 확인
     assert cancel_order_res.status_code == 200
@@ -414,7 +414,7 @@ def test_cancel_order_restore_stock(
     assert after_stock == before_stock - quantity
 
     # 주문 취소
-    order_cancel_res = order_client.create_order_cancel(order_id)
+    order_cancel_res = order_client.cancel_order(order_id)
 
     # 상태코드 확인
     assert order_cancel_res.status_code == 200

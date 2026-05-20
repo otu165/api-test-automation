@@ -17,10 +17,10 @@ from app.services import order_service
 from app.utils.auth import get_current_user_id
 
 
-router = APIRouter(tags = ["Orders"])
+router = APIRouter(prefix="/orders", tags = ["Orders"])
 
 
-@router.post("/orders", status_code = 201)
+@router.post("", status_code = 201)
 def create_order(
         request: CreateOrderRequest,
         current_user_id: str = Depends(get_current_user_id)
@@ -34,14 +34,14 @@ def create_order(
     )
 
 
-@router.get("/orders")
+@router.get("")
 def get_orders():
     """주문 히스토리 조회 API"""
 
     return order_service.select_orders()
 
 
-@router.post("/orders/{order_id}/cancel")
+@router.post("/{order_id}/cancel")
 def cancel_order(
         order_id: str,
         current_user_id: str = Depends(get_current_user_id)
