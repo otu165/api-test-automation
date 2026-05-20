@@ -1,27 +1,97 @@
 # Shop Backend
 
-FastAPI 기반 API 및 pytest 자동화 테스트 프로젝트
+FastAPI 기반 쇼핑몰 백엔드 API 및 pytest 테스트 프로젝트
+
+<br/>
+
+---
 
 ## 기술 스택
 
-- Python
-- FastAPI
-- SQLite
-- pytest
-- JWT Authentication
+- Python 3.13
+- FastAPI (REST API 구현)
+- SQLite (DB)
+- Pytest (API 테스트)
+- JWT (사용자 인증)
+- GitHub Actions (테스트 자동 실행)
+
+<br/>
 
 ---
 
 ## 주요 기능
 
-- 회원가입 / 로그인 API
-- JWT 기반 인증 처리
-- 포인트 조회 API
-- 주문 생성 API
-- pytest 기반 API 자동화 테스트
-- 테스트 전용 DB 분리
+### 인증
+
+| 기능 | 내용 |
+|------|------|
+| 회원가입 | 사용자 회원가입 API 구현 |
+| 로그인 | 이메일 / 비밀번호 로그인 API 구현 |
+| JWT 인증 | access_token 발급 및 사용자 인증 처리 |
+
+<br/>
+
+### 포인트
+
+| 기능 | 내용 |
+|------|------|
+| 포인트 조회 | 현재 로그인 사용자의 포인트 조회 |
+| 포인트 충전 | 사용자 포인트 충전 |
+
+<br/>
+
+### 주문
+
+| 기능 | 내용 |
+|------|------|
+| 주문 생성 | 상품 주문 API 구현 |
+| 주문 취소 | 주문 취소 API 구현 |
+| 주문 상태 관리 | PAID / CANCELED 상태 관리 |
+| 포인트 복구 | 주문 취소 시 차감 포인트 복구 |
+| 재고 복구 | 주문 취소 시 상품 재고 복구 |
+| 내 주문 목록 조회 | 현재 로그인 사용자의 주문 목록 조회 |
+| 내 주문 상세 조회 | 현재 로그인 사용자의 주문 상세 조회 |
+| 권한 검증 | 로그인 사용자만 자신의 주문 조회 및 취소 가능 |
+
+<br/>
 
 ---
+
+## 테스트 코드
+
+pytest 를 사용해 API 테스트 작성
+
+| 구분 | 테스트 내용 |
+|------|-------------|
+| 인증 | 회원가입 성공, 로그인 성공, 중복 이메일, 잘못된 비밀번호, 존재하지 않는 이메일, 이메일 형식 오류 |
+| 포인트 | 포인트 조회 성공, 잘못된 토큰 요청 실패 |
+| 주문 생성 | 주문 생성 성공, 잘못된 토큰 요청 실패, 존재하지 않는 상품 주문 실패, 주문 수량 validation 실패 |
+| 주문 취소 | 주문 취소 성공, 존재하지 않는 주문 취소 실패, 이미 취소된 주문 재취소 실패 |
+| 주문 취소 복구 | 주문 취소 시 포인트 복구, 주문 취소 시 재고 복구 |
+| 주문 조회 | 내 주문 목록 조회, 내 주문 상세 조회 |
+| 권한 검증 | 다른 사용자의 주문 취소 실패 |
+| 동시성 | 재고 1개 상품에 대한 동시 주문 요청 검증 |
+
+<br/>
+
+### 테스트 fixture
+
+| fixture | 역할 |
+|---------|------|
+| client | FastAPI TestClient 생성 |
+| reset_test_database | 각 테스트 실행 전 테스트 DB 초기화 |
+| signed_up_user | 테스트용 회원가입 사용자 생성 |
+| access_token | 테스트용 JWT access_token 생성 |
+| order_client | 인증된 주문 API 테스트 클라이언트 생성 |
+| point_client | 인증된 포인트 API 테스트 클라이언트 생성 |
+| created_order_id | 테스트용 주문 생성 후 order_id 반환 |
+| second_access_token | 두 번째 테스트 사용자 access_token 생성 |
+
+
+<br/>
+
+---
+
 
 ## 프로젝트 구조
 
@@ -49,6 +119,8 @@ shop-backend/
 └── README.md
 ```
 
+<br/>
+
 ---
 
 ## 실행 방법
@@ -59,13 +131,17 @@ shop-backend/
 pip install -r requirements.txt
 ```
 
-### FastAPI 서버 실행
+
+### 서버 실행
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-### pytest 실행
+
+### 전체 테스트 실행
 ```bash
 pytest
 ```
+
+<br/>
