@@ -28,6 +28,8 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from tests.clients.auth_client import AuthClient
+from tests.clients.order_client import OrderClient
+from tests.clients.point_client import PointClient
 from app.database import get_connection
 from app import sql_queries
 
@@ -127,3 +129,96 @@ def access_token(
     # JWT token 반환
     return body["data"]["access_token"]
 
+
+@pytest.fixture
+def order_client(
+        client: TestClient,
+        access_token: str
+):
+    """인증된 주문 API 테스트 클라이언트 생성"""
+
+    return OrderClient(
+        client = client,
+        access_token = access_token
+    )
+
+
+@pytest.fixture
+def point_client(
+        client: TestClient,
+        access_token: str
+):
+    """인증된 포인트 API 테스트 클라이언트 생성"""
+
+    return PointClient(
+        client = client,
+        access_token = access_token
+    )
+
+
+@pytest.fixture
+def created_order_id(
+        order_client: OrderClient
+):
+    """테스트용 주문 생성 후 order_id 반환"""
+
+    response = order_client.create_order(
+        product_id = "KB1001",
+        quantity = 1
+    )
+
+    assert response.status_code == 201
+
+    # 공통 응답(success_response) 구조 검증
+    body = response.json()
+
+    assert body["success"] is True
+    assert body["message"] == "주문 성공"
+    assert body["error"] is None
+
+    assert "data" in body
+    assert isinstance(body["data"], dict)
+
+    assert "order_id" in body["data"]
+
+    # order_id 반환
+    return body["data"]["order_id"]
+
+
+@pytest.fixture
+def second_access_token(
+        client: TestClient
+):
+    """access_token 과 다른, 2번째 사용자의 access_token 반환"""
+
+    auth_client = AuthClient(client)
+
+    second_email = "second-user-email@example.com"
+    second_password = "1234"
+
+    # 회원가입
+    signup_res = auth_client.signup(
+        email = second_email,
+        password = second_password,
+        name = "second-user"
+    )
+
+    # 회원가입 상태코드 검증
+    assert signup_res.status_code == 201
+
+    # 로그인
+    signin_res = auth_client.signin(
+        email = second_email,
+        password = second_password
+    )
+
+    # 로그인 상태코드 검증
+    assert signin_res.status_code == 200
+
+    signin_body = signin_res.json()
+
+    assert "data" in signin_body
+    assert "access_token" in signin_body
+
+    # 2번째 사용자의 access_token 반환
+    return signin_body["data"]["access_token"]
