@@ -32,6 +32,12 @@ class OrderClient(BaseClient):
         )
 
 
+    def get_orders(self):
+        """내 주문 히스토리 조회 API 요청"""
+
+        return self.get("/orders")
+
+
     def cancel_order(
             self,
             order_id: str

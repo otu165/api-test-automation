@@ -423,3 +423,68 @@ def test_cancel_order_restore_stock(
     restored_product = product_repository.select_product_by_id(product_id)
 
     assert before_stock == restored_product["stock"]
+
+
+
+def test_get_my_orders_success(
+        client: TestClient,
+        access_token: str
+):
+    """내 주문 히스토리 조회 API 성공 검증"""
+
+    order_client = OrderClient(client, access_token)
+
+    # 키보드 주문 생성
+    kb_order_res = order_client.create_order(
+        product_id = "KB1001",
+        quantity = 1
+    )
+
+    # 마우스 주문 생성
+    ms_order_res = order_client.create_order(
+        product_id = "MS1001",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert kb_order_res.status_code == 201
+    assert ms_order_res.status_code == 201
+
+    # 데이터 검증
+    assert "data" in kb_order_res.json()
+    assert "order_id" in kb_order_res.json()["data"]
+
+    kb_order_id = kb_order_res.json()["data"]["order_id"]
+
+    assert "data" in ms_order_res.json()
+    assert "order_id" in ms_order_res.json()["data"]
+
+    ms_order_id = ms_order_res.json()["data"]["order_id"]
+
+    # 나의 주문 목록 조회
+    response = order_client.get_orders()
+
+    # 상태코드 검증
+    assert response.status_code == 200
+
+    body = response.json()
+
+    # 공통 응답 구조(success_response) 검증
+    assert body["success"] is True
+    assert body["message"] == "주문 목록 조회 성공"
+    assert body["error"] is None
+
+    # data 구조 검증
+    assert "data" in body
+    assert isinstance(body["data"], dict)
+
+    assert len(body["data"]["orders"]) == body["data"]["count"]
+
+    # orders 내부 order_id 검증
+    order_ids = {
+        order["order_id"]
+        for order in body["data"]["orders"]
+    }
+
+    assert kb_order_id in order_ids
+    assert ms_order_id in order_ids

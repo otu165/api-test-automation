@@ -75,7 +75,7 @@ def select_order_by_id(
     order_id: str,
     connection: Optional[sqlite3.Connection] = None
 ):
-    "주문 ID 로 주문 단건 조회"
+    """주문 ID 로 주문 단건 조회"""
 
     # DB 커넥션 전달된 경우
     if connection is not None:
@@ -120,6 +120,29 @@ def update_order_stuats(
         connection.commit() # 데이터 수정이므로 commit 필요
 
         return
+
+    finally:
+        connection.close()
+
+
+
+def select_orders_by_user_id(
+        user_id: str
+):
+    """user_id 와 일치하는 주문 목록 조회"""
+
+    connection = get_connection()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            sql_queries.SELECT_ORDERS_BY_USER_ID,
+            (user_id, )
+        )
+
+        orders = cursor.fetchall()
+
+        return [dict(order) for order in orders]
 
     finally:
         connection.close()

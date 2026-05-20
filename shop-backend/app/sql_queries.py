@@ -189,3 +189,17 @@ UPDATE_ORDER_STATUS = """
        SET status = ?
      WHERE order_id = ?
 """
+
+
+SELECT_ORDERS_BY_USER_ID = """
+    SELECT order_id
+         , user_id
+         , product_id
+         , quantity
+         , total_price
+         , status
+         , created_at
+      FROM tb_order
+     WHERE user_id = ?
+     ORDER BY created_at DESC
+"""

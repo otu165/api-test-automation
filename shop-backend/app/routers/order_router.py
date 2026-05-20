@@ -35,10 +35,12 @@ def create_order(
 
 
 @router.get("")
-def get_orders():
-    """주문 히스토리 조회 API"""
+def get_orders(
+        current_user_id: str = Depends(get_current_user_id)
+):
+    """내 주문 히스토리 조회 API"""
 
-    return order_service.select_orders()
+    return order_service.select_orders(current_user_id)
 
 
 @router.post("/{order_id}/cancel")
@@ -49,3 +51,5 @@ def cancel_order(
     """주문 취소 API"""
 
     return order_service.cancel_order(order_id)
+
+

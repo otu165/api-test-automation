@@ -250,3 +250,15 @@ def cancel_order(order_id: str):
         conn.close()
 
 
+def select_orders(user_id: str):
+    """내 주문 목록 조회"""
+
+    orders = order_repository.select_orders_by_user_id(user_id)
+
+    return success_response(
+        message = "주문 목록 조회 성공",
+        data = {
+            "orders" : orders,
+            "count" : len(orders)
+        }
+    )
