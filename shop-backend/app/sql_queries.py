@@ -59,7 +59,7 @@ INSERT_USER = """
         point, 
         created_at
     )
-    VALUES (?, ?, ?, ?, ?, DATETIME('now'));
+    VALUES (?, ?, ?, ?, ?, DATETIME('now', '+9 hours'));
 """
 
 
@@ -113,7 +113,7 @@ INSERT_PRODUCT = """
         stock,
         created_at
     )
-    VALUES (?, ?, ?, ?, DATETIME('now'))
+    VALUES (?, ?, ?, ?, DATETIME('now', '+9 hours'))
 """
 
 
@@ -155,7 +155,7 @@ INSERT_ORDER = """
         status, 
         created_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, DATETIME('now'))
+    VALUES (?, ?, ?, ?, ?, ?, DATETIME('now', '+9 hours'))
 """
 
 
