@@ -218,7 +218,7 @@ def second_access_token(
     signin_body = signin_res.json()
 
     assert "data" in signin_body
-    assert "access_token" in signin_body
+    assert "access_token" in signin_body["data"]
 
     # 2번째 사용자의 access_token 반환
     return signin_body["data"]["access_token"]
