@@ -132,23 +132,6 @@ def insert_order(
         conn.close()
 
 
-
-
-def select_orders() -> dict:
-    """모든 주문 히스토리 조회"""
-
-    orders = order_repository.select_all_orders()
-
-    # 주문 목록 + 개수 반환
-    return success_response(
-        message = "주문 목록 조회 성공",
-        data = {
-            "orders" : orders,
-            "count" : len(orders)
-        }
-    )
-
-
 def cancel_order(order_id: str):
     """주문 취소"""
 
