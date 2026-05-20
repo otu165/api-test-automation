@@ -153,3 +153,141 @@ def test_create_order_with_zero_quantity(
     # error > code 검증
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+
+
+def test_cancel_order_success(
+        client: TestClient,
+        access_token: str
+):
+    """주문 취소 성공 응답 검증"""
+
+    order_client = OrderClient(client, access_token)
+
+    # 주문 생성
+    create_order_res = order_client.create_order(
+        product_id = "MS1001",
+        quantity = 1
+    )
+
+    # 상태코드 확인
+    assert create_order_res.status_code == 201
+
+    create_order_body = create_order_res.json()
+
+    # 데이터 확인
+    assert "data" in create_order_body
+    assert "order_id" in create_order_body["data"]
+
+    order_id = create_order_body["data"]["order_id"]
+
+    # 주문 취소
+    cancel_order_res = order_client.create_order_cancel(order_id)
+
+    # 상태코드 확인
+    assert cancel_order_res.status_code == 200
+
+    cancel_order_body = cancel_order_res.json()
+
+    # 공통 응답 구조(success_response) 검증
+    assert cancel_order_body["success"] is True
+    assert cancel_order_body["message"] == "주문 취소 성공"
+    assert cancel_order_body["error"] is None
+
+    # data 구조 검증
+    assert "data" in cancel_order_body
+    assert isinstance(cancel_order_body["data"], dict)
+
+    # data > order_id 검증
+    assert "order_id" in cancel_order_body["data"]
+    assert cancel_order_body["data"]["order_id"] == order_id
+
+    # data > status 검증
+    assert "status" in cancel_order_body["data"]
+    assert cancel_order_body["data"]["status"] == "CANCELED"
+
+
+def test_cancel_order_not_found(
+        client: TestClient,
+        access_token: str
+):
+    """존재하지 않는 주문 취소 실패"""
+
+    order_client = OrderClient(client, access_token)
+
+    # 존재하지 않는 주문 취소 요청
+    response = order_client.create_order_cancel(
+        order_id = "ORDER-NOT-FOUND"
+    )
+
+    # 응답 검증
+    assert response.status_code == 404
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "주문 취소 실패"
+    assert body["data"] is None
+
+    # error 구조 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+
+
+
+def test_cancel_order_already_canceled(
+        client: TestClient,
+        access_token: str
+):
+    """이미 취소된 주문 재취소 실패 검증"""
+
+    order_client = OrderClient(client, access_token)
+
+    # 주문 생성
+    create_order_res = order_client.create_order(
+        product_id = "MS1001",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert create_order_res.status_code == 201
+
+    # order_id 꺼내기
+    create_order_body = create_order_res.json()
+
+    assert "data" in create_order_body
+    assert "order_id" in create_order_body["data"]
+
+    order_id = create_order_body["data"]["order_id"]
+
+    # 주문 취소
+    cancel_order_res = order_client.create_order_cancel(order_id)
+
+    # 상태코드 검증
+    assert cancel_order_res.status_code == 200
+
+    # 동일 주문 재취소
+    double_cancel_order_res = order_client.create_order_cancel(order_id)
+
+    # 상태코드 검증
+    assert double_cancel_order_res.status_code == 400
+
+    dco_body = double_cancel_order_res.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert dco_body["success"] is False
+    assert dco_body["message"] == "주문 취소 실패"
+    assert dco_body["data"] is None
+
+    # error 구조 검증
+    assert "error" in dco_body
+    assert isinstance(dco_body["error"], dict)
+
+    # error > code 검증
+    assert "code" in dco_body["error"]
+    assert dco_body["error"]["code"] == error_codes.ORDER_ALREADY_CANCELED

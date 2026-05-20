@@ -30,3 +30,14 @@ class OrderClient(BaseClient):
                 "quantity" : quantity
             }
         )
+
+
+    def create_order_cancel(
+            self,
+            order_id: str
+    ):
+        """주문 취소 API 요청"""
+
+        return self.post(
+            f"/orders/{order_id}/cancel"
+        )
