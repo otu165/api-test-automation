@@ -19,6 +19,7 @@ class SignUpRequest(BaseModel):
     """회원가입 요청 모델"""
 
     email: EmailStr = Field(
+        max_length = 254,
         examples = ["user@example.com"],
         description = "사용자 이메일"
     )
@@ -38,6 +39,7 @@ class SignInRequest(BaseModel):
     """로그인 요청 모델"""
 
     email: EmailStr = Field(
+        max_length = 254,
         examples = ["user@example.com"],
         description = "로그인 이메일"
     )
