@@ -18,29 +18,59 @@ from pydantic import BaseModel, EmailStr, Field
 class SignUpRequest(BaseModel):
     """회원가입 요청 모델"""
 
-    email: EmailStr
-    password: str
-    name: str
+    email: EmailStr = Field(
+        examples = ["user@example.com"],
+        description = "사용자 이메일"
+    )
+
+    password: str = Field(
+        examples = ["1234"],
+        description = "사용자 비밀번호"
+    )
+
+    name: str = Field(
+        examples = ["홍길동"],
+        description = "사용자 이름"
+    )
 
 
 class SignInRequest(BaseModel):
     """로그인 요청 모델"""
 
-    email: EmailStr
-    password: str
+    email: EmailStr = Field(
+        examples = ["user@example.com"],
+        description = "로그인 이메일"
+    )
+
+    password: str = Field(
+        examples = ["1234"],
+        description = "로그인 비밀번호"
+    )
 
 
 class ChargePointRequest(BaseModel):
     """포인트 충전 요청 모델"""
 
-    amount: int = Field(gt=0)   # 0 보다 큰 정수값
+    amount: int = Field(
+        gt = 0, # 0 보다 큰 정수값이 입력되어야 함
+        examples = [1000],
+        description = "충전할 포인트"
+    )
 
 
 class CreateOrderRequest(BaseModel):
     """주문 생성 요청 모델"""
 
-    product_id: str
-    quantity: int = Field(gt=0) # 0 보다 큰 정수값
+    product_id: str = Field(
+        examples = ["KB1001"],      # API 문서에 노출될 product_id 예시
+        description = "주문할 상품 ID" # API 문서에 노출될 product_id 설명
+    )
+
+    quantity: int = Field(
+        gt = 0, # 0 보다 큰 정수값이 입력되어야 함
+        examples = [1],
+        description = "주문 수량"
+    )
 
 
 class MessageResponse(BaseModel):
