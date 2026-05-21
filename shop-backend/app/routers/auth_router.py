@@ -20,7 +20,12 @@ from app.services import auth_service
 router = APIRouter(prefix = "/auth", tags = ["Auth"])
 
 
-@router.post("/signup", status_code = 201)
+@router.post(
+    path = "/signup",
+    status_code = 201,
+    summary = "회원가입",
+    description = "이메일, 비밀번호, 이름을 입력해 사용자를 생성한다."
+)
 def signup(request: SignUpRequest):
     """회원가입 API"""
 
@@ -31,7 +36,11 @@ def signup(request: SignUpRequest):
     )
 
 
-@router.post("/signin")
+@router.post(
+    path = "/signin",
+    summary = "로그인",
+    description = "이메일과 비밀번호를 검증하고 access_token 을 발급한다."
+)
 def signin(request: SignInRequest):
     """로그인 API"""
 

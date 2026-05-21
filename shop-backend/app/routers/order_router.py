@@ -20,7 +20,12 @@ from app.utils.auth import get_current_user_id
 router = APIRouter(prefix="/orders", tags = ["Orders"])
 
 
-@router.post("", status_code = 201)
+@router.post(
+    path = "",
+    status_code = 201,
+    summary = "상품 주문",
+    description = "로그인한 사용자가 상품을 주문한다."
+)
 def create_order(
         request: CreateOrderRequest,
         current_user_id: str = Depends(get_current_user_id)
@@ -34,7 +39,11 @@ def create_order(
     )
 
 
-@router.get("")
+@router.get(
+    path = "",
+    summary = "내 주문 목록 조회",
+    description = "로그인한 사용자의 주문 목록을 조회한다."
+)
 def get_orders(
         current_user_id: str = Depends(get_current_user_id)
 ):
@@ -43,7 +52,10 @@ def get_orders(
     return order_service.select_orders(current_user_id)
 
 
-@router.get("/{order_id}")
+@router.get(
+    path = "/{order_id}",
+    summary = "내 주문 상세 조회",
+    description = "로그인한 사용자의 order_id 와 일치하는 주문 상세 정보를 조회한다.")
 def get_order_detail(
         order_id: str,
         current_user_id: str = Depends(get_current_user_id)
@@ -55,7 +67,10 @@ def get_order_detail(
     )
 
 
-@router.post("/{order_id}/cancel")
+@router.post(
+    path = "/{order_id}/cancel",
+    summary = "주문 취소",
+    description = "로그인한 사용자의 order_id 와 일치하는 주문을 취소한다. 주문 취소 시 계정 포인트와 상품 재고가 복구된다.")
 def cancel_order(
         order_id: str,
         current_user_id: str = Depends(get_current_user_id)

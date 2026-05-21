@@ -21,7 +21,11 @@ from app.utils.auth import get_current_user_id
 router = APIRouter(prefix = "/points", tags = ["Points"])
 
 
-@router.post("/charge")
+@router.post(
+    path = "/charge",
+    summary = "포인트 충전",
+    description = "로그인한 사용자의 포인트를 충전한다."
+)
 def charge_point(
         request: ChargePointRequest,
         current_user_id: str = Depends(get_current_user_id)
@@ -34,7 +38,11 @@ def charge_point(
     )
 
 
-@router.get("")
+@router.get(
+    path = "",
+    summary = "포인트 조회",
+    description = "로그인한 사용자의 현재 포인트를 조회한다."
+)
 def get_point(
         current_user_id: str = Depends(get_current_user_id)
 ):
