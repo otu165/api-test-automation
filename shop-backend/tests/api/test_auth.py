@@ -49,6 +49,45 @@ def test_signup_success(client):
     assert 0 < len(body["data"]["user_id"])
 
 
+def test_signup_email_too_long(client):
+    """이메일 길이(254) 초과 회원가입 실패 검증"""
+
+    auth_client = AuthClient(client)
+
+    too_long_email = f"{"a" * 249}@a.com"
+
+    response = auth_client.post(
+        path = "/auth/signup",
+        payload = {
+            "email" : too_long_email,
+            "password" : "1234",
+            "name" : "too-long-email"
+        }
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 검증
+    assert "detail" in body["error"]
+    assert "too long" in body["error"]["detail"]
+
+
 
 def test_signin_success(client):
     """로그인 성공 및 JWT 발급 검증"""
@@ -226,5 +265,42 @@ def test_signup_invalid_email_format(client):
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.VALIDATION_ERROR
 
+
+def test_signin_email_too_long(client):
+    """이메일 길이 초과 로그인 실패"""
+
+    auth_client = AuthClient(client)
+
+    too_long_email = f"{"a" * 249}@a.com"
+
+    response = auth_client.post(
+        path = "/auth/signin",
+        payload = {
+            "email" : too_long_email,
+            "password" : "1234"
+        }
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 검증
+    assert "detail" in body["error"]
+    assert "too long" in body["error"]["detail"]
 
 
