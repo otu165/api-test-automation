@@ -92,6 +92,18 @@ pytest 를 사용해 API 테스트 작성
 
 ---
 
+## CI / GitHub Actions / 테스트 리포트
+
+GitHub Actions 를 사용해 main 브랜치 push 시 자동으로 테스트 실행
+
+- pytest 자동 실행
+- pytest-html 을 사용해 테스트 결과를 HTML 리포트로 생성
+- HTML 리포트 artifact 다운로드 가능
+
+<br/>
+
+---
+
 
 ## 프로젝트 구조
 
