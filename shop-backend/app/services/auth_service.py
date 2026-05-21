@@ -11,6 +11,7 @@
 """
 
 import uuid
+import logging
 
 from fastapi import status
 
@@ -21,6 +22,9 @@ from app.utils.response import success_response
 from app.utils.auth import create_access_token
 
 
+logger = logging.getLogger(__name__)
+
+
 def insert_user(
         email: str,
         password: str,
@@ -28,8 +32,16 @@ def insert_user(
 ) -> dict:
     """신규 회원가입 처리"""
 
+    logger.info(
+        "회원가입 요청: email = %s", email
+    )
+
     # 이메일 입력 검증
     if not email:
+        logger.warning(
+            "회원가입 실패 - 부적절한 이메일 입력: email = %s", email
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "회원가입 실패",
@@ -39,6 +51,10 @@ def insert_user(
 
     # 비밀번호 입력 검증
     if not password:
+        logger.warning(
+            "회원가입 실패 - 부적절한 비밀번호 입력"
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "회원가입 실패",
@@ -48,6 +64,10 @@ def insert_user(
 
     # 이름 검증
     if not name:
+        logger.warning(
+            "회원가입 실패 - 부적절한 이름 입력"
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "회원가입 실패",
@@ -59,6 +79,10 @@ def insert_user(
     user = user_repository.select_user_by_email(email)
 
     if user:
+        logger.warning(
+            "회원가입 실패 - 중복 이메일: email = %s", email
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "회원가입 실패",
@@ -68,6 +92,10 @@ def insert_user(
 
     user_id = str(uuid.uuid4())
     user_repository.insert_user(user_id, email, password, name)
+
+    logger.info(
+        "회원가입 성공: email = %s", email
+    )
 
     return success_response(
         message = "회원가입 성공",
@@ -83,8 +111,16 @@ def select_user_by_email_and_password(
 ) -> dict:
     """로그인 처리"""
 
+    logger.info(
+        "로그인 요청: email = %s", email
+    )
+
     # 1. 이메일 입력 검증
     if not email:
+        logger.warning(
+            "로그인 실패 - 부적절한 이메일 입력: email = %s", email
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "로그인 실패",
@@ -94,6 +130,10 @@ def select_user_by_email_and_password(
 
     # 2. 비밀번호 입력 검증
     if not password:
+        logger.warning(
+            "로그인 실패 - 부적절한 비밀번호 입력"
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "로그인 실패",
@@ -104,6 +144,10 @@ def select_user_by_email_and_password(
     user = user_repository.select_user_by_email_and_password(email, password)
 
     if user is None:
+        logger.warning(
+            "로그인 실패 - 아이디 또는 비밀번호 틀림"
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "로그인 실패",
@@ -115,6 +159,10 @@ def select_user_by_email_and_password(
     access_token = create_access_token(user["user_id"])
 
     # 토큰 반환
+    logger.info(
+        "로그인 성공: email = %s", email
+    )
+
     return success_response(
         message = "로그인 성공",
         data = {

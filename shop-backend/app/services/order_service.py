@@ -15,11 +15,16 @@
 import uuid
 from fastapi import status
 
+import logging
+
 from app.utils.response import success_response
 from app.constants import error_codes
 from app.exceptions.api_exception import ApiException
 from app.repositories import user_repository, product_repository, order_repository
 from app.database import get_connection
+
+
+logger = logging.getLogger(__name__)
 
 
 def insert_order(
@@ -29,8 +34,19 @@ def insert_order(
 ):
     """신규 주문 생성"""
 
+    logger.info(
+        "주문 요청: user_id = %s, product_id = %s, quantity = %s",
+        user_id,
+        product_id,
+        quantity
+    )
+
     # 구매 개수가 양의 정수인지 확인
     if quantity <= 0:
+        logger.warning(
+            "주문 실패 - 부적절한 구매 개수: quantity = %s", quantity
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "주문 실패",
@@ -42,6 +58,10 @@ def insert_order(
     user = user_repository.select_user_by_id(user_id)
 
     if user is None:
+        logger.warning(
+            "주문 실패 - 요청된 사용자 없음: user_id = %s", user_id
+        )
+
         raise ApiException(
             status_code = status.HTTP_404_NOT_FOUND,
             message = "주문 실패",
@@ -53,6 +73,10 @@ def insert_order(
     product = product_repository.select_product_by_id(product_id)
 
     if product is None:
+        logger.warning(
+            "주문 실패 - 요청된 상품 없음: product_id = %s", product_id
+        )
+
         raise ApiException(
             status_code = status.HTTP_404_NOT_FOUND,
             message = "주문 실패",
@@ -65,6 +89,10 @@ def insert_order(
 
     # 잔여 포인트 확인
     if user["point"] < total_price:
+        logger.warning(
+            "주문 실패 - 포인트 부족: user_point = %s", user["point"]
+        )
+
         raise ApiException(
             status_code = status.HTTP_400_BAD_REQUEST,
             message = "주문 실패",
@@ -88,6 +116,12 @@ def insert_order(
         )
 
         if not is_stock_decreased:
+            logger.warning(
+                "주문 생성 실패 - 재고 부족: product_id = %s, quantity = %s",
+                product_id,
+                quantity
+            )
+
             raise ApiException(
                 status_code = status.HTTP_400_BAD_REQUEST,
                 message = "주문 실패",
@@ -106,6 +140,13 @@ def insert_order(
         conn.commit()
 
         # 결과 반환
+        logger.info(
+            "주문 성공: order_id = %s, user_id = %s, product_id = %s",
+            order_id,
+            user_id,
+            product_id
+        )
+
         return success_response(
             message="주문 성공",
             data={
@@ -123,6 +164,11 @@ def insert_order(
         raise # 예외 응답 형태는 기존 예외 처리 흐름에 맡긴다
     except Exception:
         conn.rollback()
+
+        logger.exception(
+            "주문 실패: 서버 내부 오류 발생"
+        )
+
         raise ApiException(
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
             message = "주문 실패",
@@ -140,6 +186,12 @@ def cancel_order(
 ):
     """주문 취소"""
 
+    logger.info(
+        "주문 취소 요청: order_id = %s, user_id = %s",
+        order_id,
+        user_id
+    )
+
     conn = get_connection()
 
     try:
@@ -151,6 +203,10 @@ def cancel_order(
         )
 
         if order is None:
+            logger.warning(
+                "주문 취소 실패 - 요청된 주문 없음: order_id = %s", order_id
+            )
+
             raise ApiException(
                 status_code = status.HTTP_404_NOT_FOUND,
                 message = "주문 취소 실패",
@@ -160,6 +216,10 @@ def cancel_order(
 
         # (취소 전) 현재 주문 상태 확인
         if order["status"] == "CANCELED":
+            logger.warning(
+                "주문 취소 실패 - 이미 취소된 주문: order_status = %s", order["status"]
+            )
+
             raise ApiException(
                 status_code = status.HTTP_400_BAD_REQUEST,
                 message = "주문 취소 실패",
@@ -171,6 +231,10 @@ def cancel_order(
         user = user_repository.select_user_by_id(order["user_id"])
 
         if user is None:
+            logger.warning(
+                "주문 취소 실패 - 일치하는 사용자 없음: user_id = %s", order["user_id"]
+            )
+
             raise ApiException(
                 status_code = status.HTTP_404_NOT_FOUND,
                 message = "주문 취소 실패",
@@ -191,6 +255,10 @@ def cancel_order(
         product = product_repository.select_product_by_id(order["product_id"])
 
         if product is None:
+            logger.warning(
+                "주문 취소 실패 - 요청된 상품 없음: product_id = %s", order["product_id"]
+            )
+
             raise ApiException(
                 status_code = status.HTTP_404_NOT_FOUND,
                 message = "주문 취소 실패",
@@ -220,6 +288,12 @@ def cancel_order(
         # (취소 후) 변경된 주문 조회
         canceled_order = order_repository.select_order_by_id(order_id, conn)
 
+        logger.info(
+            "주문 취소 성공: order_id = %s, user_id = %s",
+            order_id,
+            user_id
+        )
+
         return success_response(
             message = "주문 취소 성공",
             data = canceled_order
@@ -231,6 +305,11 @@ def cancel_order(
 
     except Exception:
         conn.rollback()
+
+        logger.exception(
+            "주문 취소 실패 - 서버 내부 오류 발생"
+        )
+
         raise ApiException(
             status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
             message = "주문 취소 실패",
@@ -245,7 +324,17 @@ def cancel_order(
 def select_orders(user_id: str):
     """내 주문 목록 조회"""
 
+    logger.info(
+        "주문 목록 조회 요청: user_id = %s", user_id
+    )
+
     orders = order_repository.select_orders_by_user_id(user_id)
+
+    logger.info(
+        "주문 목록 조회 성공: user_id = %s, count = %s",
+        user_id,
+        len(orders)
+    )
 
     return success_response(
         message = "주문 목록 조회 성공",
@@ -263,18 +352,34 @@ def select_order_detail(
 ) -> dict:
     """내 주문 상세 조회"""
 
+    logger.info(
+        "주문 상세 조회 요청: order_id = %s, user_id = %s",
+        order_id,
+        user_id
+    )
+
     order = order_repository.select_order_by_id_and_user_id(
         order_id = order_id,
         user_id = user_id
     )
 
     if order is None:
+        logger.warning(
+            "주문 상세 조회 실패 - 요청된 주문 없음: order_id = %s", order_id
+        )
+
         raise ApiException(
             status_code = status.HTTP_404_NOT_FOUND,
             message = "주문 상세 조회 실패",
             code = error_codes.ORDER_NOT_FOUND,
             detail = "요청된 주문을 찾을 수 없습니다."
         )
+
+    logger.info(
+        "주문 상세 조회 성공: order_id = %s, user_id = %s",
+        order_id,
+        user_id
+    )
 
     return success_response(
         message = "주문 상세 조회 성공",
