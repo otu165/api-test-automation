@@ -33,6 +33,11 @@ from tests.clients.point_client import PointClient
 from app.database import get_connection
 from app import sql_queries
 
+import logging
+
+# httpx INFO 로그 숨김
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 
 @pytest.fixture
 def client():

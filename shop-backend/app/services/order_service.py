@@ -34,13 +34,6 @@ def insert_order(
 ):
     """신규 주문 생성"""
 
-    logger.info(
-        "주문 요청: user_id = %s, product_id = %s, quantity = %s",
-        user_id,
-        product_id,
-        quantity
-    )
-
     # 구매 개수가 양의 정수인지 확인
     if quantity <= 0:
         logger.warning(
@@ -59,7 +52,7 @@ def insert_order(
 
     if user is None:
         logger.warning(
-            "주문 실패 - 요청된 사용자 없음: user_id = %s", user_id
+            "주문 실패 - 요청된 사용자 없음: user_id = %s...", user_id[:8]
         )
 
         raise ApiException(
@@ -141,9 +134,9 @@ def insert_order(
 
         # 결과 반환
         logger.info(
-            "주문 성공: order_id = %s, user_id = %s, product_id = %s",
-            order_id,
-            user_id,
+            "주문 성공: order_id = %s..., user_id = %s..., product_id = %s",
+            order_id[:8],
+            user_id[:8],
             product_id
         )
 
@@ -186,12 +179,6 @@ def cancel_order(
 ):
     """주문 취소"""
 
-    logger.info(
-        "주문 취소 요청: order_id = %s, user_id = %s",
-        order_id,
-        user_id
-    )
-
     conn = get_connection()
 
     try:
@@ -204,7 +191,7 @@ def cancel_order(
 
         if order is None:
             logger.warning(
-                "주문 취소 실패 - 요청된 주문 없음: order_id = %s", order_id
+                "주문 취소 실패 - 요청된 주문 없음: order_id = %s...", order_id[:8]
             )
 
             raise ApiException(
@@ -232,7 +219,7 @@ def cancel_order(
 
         if user is None:
             logger.warning(
-                "주문 취소 실패 - 일치하는 사용자 없음: user_id = %s", order["user_id"]
+                "주문 취소 실패 - 일치하는 사용자 없음: user_id = %s...", order["user_id"][:8]
             )
 
             raise ApiException(
@@ -289,9 +276,9 @@ def cancel_order(
         canceled_order = order_repository.select_order_by_id(order_id, conn)
 
         logger.info(
-            "주문 취소 성공: order_id = %s, user_id = %s",
-            order_id,
-            user_id
+            "주문 취소 성공: order_id = %s..., user_id = %s...",
+            order_id[:8],
+            user_id[:8]
         )
 
         return success_response(
@@ -324,15 +311,11 @@ def cancel_order(
 def select_orders(user_id: str):
     """내 주문 목록 조회"""
 
-    logger.info(
-        "주문 목록 조회 요청: user_id = %s", user_id
-    )
-
     orders = order_repository.select_orders_by_user_id(user_id)
 
     logger.info(
-        "주문 목록 조회 성공: user_id = %s, count = %s",
-        user_id,
+        "주문 목록 조회 성공: user_id = %s..., count = %s",
+        user_id[:8],
         len(orders)
     )
 
@@ -352,12 +335,6 @@ def select_order_detail(
 ) -> dict:
     """내 주문 상세 조회"""
 
-    logger.info(
-        "주문 상세 조회 요청: order_id = %s, user_id = %s",
-        order_id,
-        user_id
-    )
-
     order = order_repository.select_order_by_id_and_user_id(
         order_id = order_id,
         user_id = user_id
@@ -365,7 +342,7 @@ def select_order_detail(
 
     if order is None:
         logger.warning(
-            "주문 상세 조회 실패 - 요청된 주문 없음: order_id = %s", order_id
+            "주문 상세 조회 실패 - 요청된 주문 없음: order_id = %s...", order_id[:8]
         )
 
         raise ApiException(
@@ -376,9 +353,9 @@ def select_order_detail(
         )
 
     logger.info(
-        "주문 상세 조회 성공: order_id = %s, user_id = %s",
-        order_id,
-        user_id
+        "주문 상세 조회 성공: order_id = %s..., user_id = %s...",
+        order_id[:8],
+        user_id[:8]
     )
 
     return success_response(

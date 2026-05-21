@@ -32,14 +32,10 @@ def insert_user(
 ) -> dict:
     """신규 회원가입 처리"""
 
-    logger.info(
-        "회원가입 요청: email = %s", email
-    )
-
     # 이메일 입력 검증
     if not email:
         logger.warning(
-            "회원가입 실패 - 부적절한 이메일 입력: email = %s", email
+            "회원가입 실패 - 부적절한 이메일 입력: email = %s...", email[:8]
         )
 
         raise ApiException(
@@ -80,7 +76,7 @@ def insert_user(
 
     if user:
         logger.warning(
-            "회원가입 실패 - 중복 이메일: email = %s", email
+            "회원가입 실패 - 중복 이메일: email = %s...", email[:8]
         )
 
         raise ApiException(
@@ -94,7 +90,7 @@ def insert_user(
     user_repository.insert_user(user_id, email, password, name)
 
     logger.info(
-        "회원가입 성공: email = %s", email
+        "회원가입 성공: email = %s...", email[:8]
     )
 
     return success_response(
@@ -111,14 +107,10 @@ def select_user_by_email_and_password(
 ) -> dict:
     """로그인 처리"""
 
-    logger.info(
-        "로그인 요청: email = %s", email
-    )
-
     # 1. 이메일 입력 검증
     if not email:
         logger.warning(
-            "로그인 실패 - 부적절한 이메일 입력: email = %s", email
+            "로그인 실패 - 부적절한 이메일 입력: email = %s...", email[:8]
         )
 
         raise ApiException(
@@ -160,7 +152,7 @@ def select_user_by_email_and_password(
 
     # 토큰 반환
     logger.info(
-        "로그인 성공: email = %s", email
+        "로그인 성공: email = %s...", email[:8]
     )
 
     return success_response(

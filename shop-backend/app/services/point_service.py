@@ -28,12 +28,6 @@ def update_point(
 ) -> dict:
     """포인트 충전"""
 
-    logger.info(
-        "포인트 충전 요청: user_id = %s, amount = %s",
-        user_id,
-        amount
-    )
-
     # 충전 금액이 양의 정수값인지 확인
     if amount <= 0:
         logger.warning(
@@ -52,7 +46,7 @@ def update_point(
 
     if user is None:
         logger.warning(
-            "포인트 충전 실패 - 사용자 없음: user_id = %s", user_id
+            "포인트 충전 실패 - 사용자 없음: user_id = %s...", user_id[:8]
         )
 
         raise ApiException(
@@ -70,8 +64,8 @@ def update_point(
 
     # 결과 반환
     logger.info(
-        "포인트 충전 성공: user_id = %s, point = %s",
-        user_id,
+        "포인트 충전 성공: user_id = %s..., point = %s",
+        user_id[:8],
         new_point
     )
 
@@ -88,16 +82,12 @@ def update_point(
 def select_point(user_id: str):
     """포인트 조회"""
 
-    logger.info(
-        "포인트 조회 요청: user_id = %s", user_id
-    )
-
     # 유저 존재 확인
     user = user_repository.select_user_by_id(user_id)
 
     if user is None:
         logger.warning(
-            "포인트 조회 실패 - 사용자 없음: user_id = %s", user_id
+            "포인트 조회 실패 - 사용자 없음: user_id = %s...", user_id[:8]
         )
 
         raise ApiException(
@@ -111,8 +101,8 @@ def select_point(user_id: str):
 
     # 결과 반환
     logger.info(
-        "포인트 조회 성공: user_id = %s, point = %s",
-        user_id,
+        "포인트 조회 성공: user_id = %s..., point = %s",
+        user_id[:8],
         data["point"]
     )
 
