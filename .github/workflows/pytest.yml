@@ -29,3 +29,9 @@ jobs:
         env:
           SECRET_KEY: test-secret-key
         run: pytest --html=reports/test-report.html --self-contained-html
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: shop-backend/reports/test-report.html
