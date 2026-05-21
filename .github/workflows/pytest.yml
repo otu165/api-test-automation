@@ -28,4 +28,4 @@ jobs:
       - name: Run pytest
         env:
           SECRET_KEY: test-secret-key
-        run: pytest
+        run: pytest --html=reports/test-report.html --self-contained-html

@@ -32,3 +32,6 @@ requests
 # Python HTTP 요청 라이브러리
 # (TestClient 가 내부적으로 httpx 를 사용해서 필요함)
 httpx
+
+# pytest 테스트 결과를 HTML 파일로 만들어주는 플러그인
+pytest-html
