@@ -51,6 +51,8 @@ coverage.xml
 .pytest_cache/
 cover/
 shop-backend/reports/
+shop-backend/assets/
+shop-backend/test-report.html
 
 # Translations
 *.mo
