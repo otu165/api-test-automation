@@ -42,3 +42,41 @@ def test_charge_point_success(
     assert body["data"]["charged_amount"] == amount
 
 
+def test_charge_point_increase_balance(
+        point_client: PointClient
+):
+    """포인트 충전 후 잔액 증가 검증"""
+
+    # 1. 포인트 조회
+    before_res = point_client.get_point()
+
+    # 상태코드 검증
+    assert before_res.status_code == 200
+
+    # point 꺼내기
+    assert "data" in before_res.json()
+    assert "point" in before_res.json()["data"]
+    before_point = before_res.json()["data"]["point"]
+
+    # 2. 포인트 충전
+    amount = 1000
+
+    charge_res = point_client.charge_point(amount)
+
+    # 상태코드 검증
+    assert charge_res.status_code == 200
+
+    # 3. (충전 후) 포인트 재 조회
+    after_res = point_client.get_point()
+
+    # 상태코드 검증
+    assert after_res.status_code == 200
+
+    # point 꺼내기
+    assert "data" in after_res.json()
+    assert "point" in after_res.json()["data"]
+    after_point = after_res.json()["data"]["point"]
+
+    # 충전 후 포인트 검증
+    assert before_point + amount == after_point
+
