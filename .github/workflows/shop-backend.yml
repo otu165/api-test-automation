@@ -33,5 +33,5 @@ jobs:
       - name: Upload test report
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-report
+          name: shop-backend-pytest-report
           path: shop-backend/reports/test-report.html
