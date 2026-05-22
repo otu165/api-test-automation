@@ -44,7 +44,7 @@ def signup(request: SignUpRequest):
 def signin(request: SignInRequest):
     """로그인 API"""
 
-    return auth_service.select_user_by_email_and_password(
+    return auth_service.select_user_by_email(
         email = str(request.email),
         password = request.password
     )

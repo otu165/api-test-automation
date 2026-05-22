@@ -64,18 +64,11 @@ INSERT_USER = """
 
 
 SELECT_USER_BY_EMAIL = """
-    SELECT email
+    SELECT user_id
+         , email
+         , password
       FROM tb_user
      WHERE email = ?
-"""
-
-
-SELECT_USER_BY_EMAIL_AND_PASSWORD = """
-    SELECT user_id
-      FROM tb_user
-     WHERE 1=1
-       AND email = ?
-       AND password = ?
 """
 
 

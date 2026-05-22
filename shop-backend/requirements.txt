@@ -23,6 +23,7 @@ dotenv
 
 # 비밀번호 해싱
 passlib[bcrypt]
+bcrypt==4.0.1
 
 # ========== pytest ==========
 

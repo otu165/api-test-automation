@@ -31,7 +31,7 @@ def insert_user(user_id: str, email: str, password: str, name: str):
 
 
 def select_user_by_email(email: str):
-    """{email} 로 유저 존재 확인"""
+    """로그인 or {email} 로 유저 존재 확인"""
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -43,19 +43,6 @@ def select_user_by_email(email: str):
 
     return dict(user) if user else None
 
-
-def select_user_by_email_and_password(email: str, password: str):
-    """유저 로그인"""
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(sql_queries.SELECT_USER_BY_EMAIL_AND_PASSWORD, (email, password))
-    user_id = cursor.fetchone()
-
-    conn.close()
-
-    return dict(user_id) if user_id else None
 
 
 def select_user_by_id(user_id: str):

@@ -20,6 +20,7 @@ from app.exceptions.api_exception import ApiException
 from app.repositories import user_repository
 from app.utils.response import success_response
 from app.utils.auth import create_access_token
+from app.utils.password import hash_password, verify_password
 
 
 logger = logging.getLogger(__name__)
@@ -87,7 +88,12 @@ def insert_user(
         )
 
     user_id = str(uuid.uuid4())
-    user_repository.insert_user(user_id, email, password, name)
+    user_repository.insert_user(
+        user_id,
+        email,
+        hash_password(password),
+        name
+    )
 
     logger.info(
         "회원가입 성공: email = %s...", email[:8]
@@ -101,7 +107,7 @@ def insert_user(
     )
 
 
-def select_user_by_email_and_password(
+def select_user_by_email(
         email: str,
         password: str
 ) -> dict:
@@ -133,9 +139,9 @@ def select_user_by_email_and_password(
             detail = "올바른 비밀번호를 입력하세요."
         )
 
-    user = user_repository.select_user_by_email_and_password(email, password)
+    user = user_repository.select_user_by_email(email)
 
-    if user is None:
+    if user is None or not verify_password(password, user["password"]):
         logger.warning(
             "로그인 실패 - 아이디 또는 비밀번호 틀림"
         )
