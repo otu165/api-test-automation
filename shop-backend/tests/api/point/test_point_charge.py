@@ -167,3 +167,35 @@ def test_charge_point_with_invalid_token(
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.UNAUTHORIZED
 
+
+def test_charge_point_multiple_times(
+        point_client: PointClient
+):
+    """포인트 여러 번 충전 시 누적 증가 검증"""
+
+    # (포인트 충전 이전) 계정 포인트 조회
+    before_res = point_client.get_point()
+    assert before_res.status_code == 200
+
+    before_point = before_res.json()["data"]["point"]
+
+    first_charge_amount = 500
+    second_charge_amount = 1000
+
+    # 첫 번째 포인트 충전
+    first_charge_res = point_client.charge_point(first_charge_amount)
+    assert first_charge_res.status_code == 200
+
+    # 두 번째 포인트 충전
+    second_charge_res = point_client.charge_point(second_charge_amount)
+    assert second_charge_res.status_code == 200
+
+    # (포인트 충전 이후) 계정 포인트 조회
+    after_res = point_client.get_point()
+    assert after_res.status_code == 200
+
+    after_point = after_res.json()["data"]["point"]
+
+    # 포인트 충전량 검증
+    assert before_point + first_charge_amount + second_charge_amount == after_point
+
