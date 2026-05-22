@@ -13,7 +13,7 @@ FastAPI 애플리케이션 실행을 담당하는 파일
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 
-from app.database import init_db
+from app.core.database import init_db
 from app.exceptions.api_exception import ApiException
 from app.exceptions.exception_handlers import api_exception_handler, validation_exception_handler
 from app.routers import auth_router, order_router, point_router

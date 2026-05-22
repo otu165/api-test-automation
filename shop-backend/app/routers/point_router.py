@@ -13,7 +13,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.models import ChargePointRequest
+from app.shcemas.models import ChargePointRequest
 from app.services import point_service
 from app.utils.auth import get_current_user_id
 

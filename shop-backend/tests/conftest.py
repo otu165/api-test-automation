@@ -30,8 +30,8 @@ from app.main import app
 from tests.clients.auth_client import AuthClient
 from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
-from app.database import get_connection
-from app import sql_queries
+from app.core.database import get_connection
+from app.core import sql_queries
 
 import logging
 

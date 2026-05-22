@@ -11,8 +11,8 @@ orders 테이블 저장을 담당하는 파일
 import sqlite3
 from typing import Optional
 
-from app.database import get_connection
-from app import sql_queries
+from app.core.database import get_connection
+from app.core import sql_queries
 
 
 def insert_order(
@@ -80,7 +80,7 @@ def select_order_by_id(
     # DB 커넥션 전달된 경우
     if connection is not None:
         cursor = connection.cursor()
-        cursor.execute(sql_queries.SELECT_ORDER_BY_ID, (order_id, ))
+        cursor.execute(sql_queries.SELECT_ORDER_BY_ID, (order_id,))
 
         order = cursor.fetchone()
 
@@ -91,7 +91,7 @@ def select_order_by_id(
 
     try:
         cursor = connection.cursor()
-        cursor.execute(sql_queries.SELECT_ORDER_BY_ID, (order_id, ))
+        cursor.execute(sql_queries.SELECT_ORDER_BY_ID, (order_id,))
 
         order = cursor.fetchone()
 

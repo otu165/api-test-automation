@@ -13,7 +13,7 @@
 
 from fastapi import APIRouter
 
-from app.models import SignUpRequest, SignInRequest
+from app.shcemas.models import SignUpRequest, SignInRequest
 from app.services import auth_service
 
 

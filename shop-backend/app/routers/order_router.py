@@ -12,7 +12,7 @@
 
 from fastapi import APIRouter, Depends
 
-from app.models import CreateOrderRequest
+from app.shcemas.models import CreateOrderRequest
 from app.services import order_service
 from app.utils.auth import get_current_user_id
 

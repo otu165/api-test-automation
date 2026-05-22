@@ -21,7 +21,7 @@ from app.utils.response import success_response
 from app.constants import error_codes
 from app.exceptions.api_exception import ApiException
 from app.repositories import user_repository, product_repository, order_repository
-from app.database import get_connection
+from app.core.database import get_connection
 
 
 logger = logging.getLogger(__name__)

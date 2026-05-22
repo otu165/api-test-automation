@@ -13,8 +13,8 @@ products 테이블 조회를 담당하는 파일
 import sqlite3
 from typing import Optional
 
-from app.database import get_connection
-from app import sql_queries
+from app.core.database import get_connection
+from app.core import sql_queries
 
 
 def select_all_products():
