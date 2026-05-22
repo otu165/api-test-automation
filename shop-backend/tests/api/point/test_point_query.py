@@ -1,12 +1,11 @@
 """
-경로 : shop-backend/tests/api/point/test_point.py
-파일명 : test_point.py
+경로 : shop-backend/tests/api/point/test_point_query.py
+파일명 : test_point_query.py
 
-포인트 API 테스트를 담당하는 파일
+포인트 조회 API 테스트를 담당하는 파일
 
 이 파일의 역할:
 - 인증된 사용자의 포인트 조회 성공 검증
-- 토큰이 없는 요청 실패 검증
 - 잘못된 토큰 요청 실패 검증
 
 """
