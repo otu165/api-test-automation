@@ -23,3 +23,17 @@ class PointClient(BaseClient):
         return self.get(
             "/points",
         )
+
+
+    def charge_point(
+            self,
+            amount: int
+    ):
+        """포인트 충전 API 요청"""
+
+        return self.post(
+            "/points/charge",
+            payload = {
+                "amount" : amount
+            }
+        )
