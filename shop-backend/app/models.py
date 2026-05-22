@@ -25,6 +25,8 @@ class SignUpRequest(BaseModel):
     )
 
     password: str = Field(
+        min_length = 4,
+        max_length = 72,
         examples = ["1234"],
         description = "사용자 비밀번호"
     )
@@ -45,6 +47,8 @@ class SignInRequest(BaseModel):
     )
 
     password: str = Field(
+        min_length = 4,
+        max_length = 72,
         examples = ["1234"],
         description = "로그인 비밀번호"
     )
