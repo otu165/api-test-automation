@@ -148,3 +148,137 @@ def test_get_other_user_order_detail_not_found(
     # error > code 검증
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+
+
+def test_get_canceled_order_detail_success(
+        order_client: OrderClient,
+        created_order_id: str
+):
+    """취소된 주문 상세 조회 시 CANCELED 상태 검증"""
+
+    # 주문 취소 API 호출
+    cancel_res = order_client.cancel_order(created_order_id)
+
+    # 상태코드 검증
+    assert cancel_res.status_code == 200
+
+    # 주문 상세 조회 API 호출
+    detail_res = order_client.get_order_detail(created_order_id)
+
+    # 상태코드 검증
+    assert detail_res.status_code == 200
+
+    detail_body = detail_res.json()
+
+    # 공통 응답 구조(success_response) 검증
+    assert detail_body["success"] is True
+    assert detail_body["message"] == "주문 상세 조회 성공"
+    assert detail_body["error"] is None
+
+    # data 구조 검증
+    assert "data" in detail_body
+    assert isinstance(detail_body["data"], dict)
+
+    # data > order_id 검증
+    assert "order_id" in detail_body["data"]
+    assert detail_body["data"]["order_id"] == created_order_id
+
+    # data > status 검증
+    assert "status" in detail_body["data"]
+    assert detail_body["data"]["status"] == "CANCELED"
+
+
+def test_get_order_detail_not_found(
+        order_client: OrderClient
+):
+    """존재하지 않는 주문 상세 조회 실패 검증"""
+
+    # 주문 상세 조회 API 호출
+    response = order_client.get_order_detail(
+        order_id = "ORDER_NOT_FOUND"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 404
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "주문 상세 조회 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+
+
+def test_get_orders_with_canceled_order(
+        order_client: OrderClient,
+        created_order_id: str
+):
+    """주문 목록 조회 시 취소된 주문 포함 검증"""
+
+    # 첫 번째 주문 order_id = created_order_id
+
+    # 두 번째 주문 생성
+    second_order_res = order_client.create_order(
+        product_id = "KB1001",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert second_order_res.status_code == 201
+
+    # 응답에서 order_id 추출
+    assert "data" in second_order_res.json()
+    assert "order_id" in second_order_res.json()["data"]
+
+    second_order_id = second_order_res.json()["data"]["order_id"]
+
+    # 첫 번째 주문 취소
+    cancel_res = order_client.cancel_order(created_order_id)
+
+    # 상태코드 검증
+    assert cancel_res.status_code == 200
+
+    # 주문 목록 전체 조회
+    orders_res = order_client.get_orders()
+
+    # 상태코드 검증
+    assert orders_res.status_code == 200
+
+    orders_body = orders_res.json()
+
+    # 공통 응답 구조(success_response) 검증
+    assert orders_body["success"] is True
+    assert orders_body["message"] == "주문 목록 조회 성공"
+    assert orders_body["error"] is None
+
+    # data 검증
+    assert "data" in orders_body
+    assert isinstance(orders_body["data"], dict)
+
+    # data > orders / count 검증
+    assert "orders" in orders_body["data"]
+    assert "count" in orders_body["data"]
+
+    orders = orders_body["data"]["orders"]
+    cnt = orders_body["data"]["count"]
+
+    # 주문 개수 검증
+    assert len(orders) == cnt
+    assert cnt == 2
+
+    # 주문 상태 검증
+    order_status_map = {
+        order["order_id"] : order["status"]
+        for order in orders
+    }
+
+    assert order_status_map[created_order_id] == "CANCELED" # 첫 번째 주문은 취소 상태
+    assert order_status_map[second_order_id] == "PAID"      # 두 번째 주문은 지불됨 상태
