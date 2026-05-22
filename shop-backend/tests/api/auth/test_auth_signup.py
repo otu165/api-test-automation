@@ -10,7 +10,7 @@
 - JWT Access Token 발급 여부 검증
 
 """
-
+from starlette.testclient import TestClient
 
 from tests.clients.auth_client import AuthClient
 from app.constants import error_codes
@@ -236,3 +236,97 @@ def test_signup_invalid_email_format(client):
     assert body["error"]["code"] == error_codes.VALIDATION_ERROR
 
 
+def test_signup_password_without_letter(
+        client: TestClient
+):
+    """영문 없는 비밀번호 회원가입 실패"""
+
+    auth_client = AuthClient(client)
+
+    # 회원가입 API 요청
+    response = auth_client.signup(
+        email = "without-letter@example.com",
+        password = "12345678!@#$%^&*",
+        name = "pwd-without-letter-user"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
+    assert "영문자" in body["error"]["detail"]
+
+
+def test_signup_password_without_number(
+        client: TestClient
+):
+    """숫자 없는 비밀번호 회원가입 실패"""
+
+    auth_client = AuthClient(client)
+
+    # 회원가입 API 요청
+    response = auth_client.signup(
+        email="without-number@example.com",
+        password="asdf!@#$%^&*",
+        name="pwd-without-number-user"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
+    assert "숫자" in body["error"]["detail"]
+
+
+def test_signup_password_without_special_char(
+        client: TestClient
+):
+    """특수문자 없는 비밀번호 회원가입 실패"""
+
+    auth_client = AuthClient(client)
+
+    # 회원가입 API 요청
+    response = auth_client.signup(
+        email="without-special-char@example.com",
+        password="asdf123456",
+        name="pwd-without-special-char-user"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
+    assert "특수문자" in body["error"]["detail"]
