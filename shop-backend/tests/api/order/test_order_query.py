@@ -1,5 +1,5 @@
 """
-경로 : shop-backend/tests/api/test_order_query.py
+경로 : shop-backend/tests/api/order/test_order_query.py
 파일명 : test_order_query.py
 
 주문 조회 API 테스트를 담당하는 파일

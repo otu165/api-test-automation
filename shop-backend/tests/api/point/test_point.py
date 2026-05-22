@@ -1,5 +1,5 @@
 """
-경로 : shop-backend/tests/api/test_point.py
+경로 : shop-backend/tests/api/point/test_point.py
 파일명 : test_point.py
 
 포인트 API 테스트를 담당하는 파일

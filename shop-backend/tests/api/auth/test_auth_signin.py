@@ -1,5 +1,5 @@
 """
-경로 : shop-backend/tests/api/test_auth_signin.py
+경로 : shop-backend/tests/api/auth/test_auth_signin.py
 파일명 : test_auth_signin.py
 
 로그인 API 테스트를 담당하는 파일

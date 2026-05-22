@@ -1,5 +1,5 @@
 """
-경로 : shop-backend/tests/api/test_order_create.py
+경로 : shop-backend/tests/api/order/test_order_create.py
 파일명 : test_order_create.py
 
 주문 생성 API 테스트를 담당하는 파일

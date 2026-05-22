@@ -1,5 +1,5 @@
 """
-경로 : shop-backend/tests/api/test_order_concurrency.py
+경로 : shop-backend/tests/api/order/test_order_concurrency.py
 파일명 : test_order_concurrency.py
 
 동시성 주문 API 테스트를 담당하는 파일
