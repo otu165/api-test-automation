@@ -16,6 +16,7 @@
 
 from tests.clients.auth_client import AuthClient
 from app.constants import error_codes
+from app.repositories import user_repository
 
 
 def test_signup_success(client):
@@ -56,13 +57,10 @@ def test_signup_email_too_long(client):
 
     too_long_email = f"{"a" * 249}@a.com"
 
-    response = auth_client.post(
-        path = "/auth/signup",
-        payload = {
-            "email" : too_long_email,
-            "password" : "1234",
-            "name" : "too-long-email"
-        }
+    response = auth_client.signup(
+        email = too_long_email,
+        password = "1234",
+        name = "too-long-email"
     )
 
     # 상태코드 검증
@@ -87,6 +85,87 @@ def test_signup_email_too_long(client):
     assert "detail" in body["error"]
     assert "too long" in body["error"]["detail"]
 
+
+def test_signup_password_is_hashed(client):
+    """회원가입 시 비밀번호 해시 저장 검증"""
+
+    email = "hased-password@example.com"
+    password = "1234"
+
+    auth_client = AuthClient(client)
+
+    response = auth_client.signup(
+        email = email,
+        password = password,
+        name = "hashed-pwd-user"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 201
+
+    # body 검증
+    body = response.json()
+
+    assert body["success"] is True
+    assert body["message"] == "회원가입 성공"
+    assert body["error"] is None
+
+    # DB에서 email 과 일치하는 유저 직접 조회
+    user = user_repository.select_user_by_email(email)
+
+    assert user is not None
+    assert user["password"] != password
+    assert user["password"].startswith("$2b$")  # bcrytp 로 hashing 됨 검증
+
+
+def test_signup_password_too_short(client):
+    """비밀번호 길이 부족(min_length = 4) 회원가입 실패"""
+    auth_client = AuthClient(client)
+
+    response = auth_client.signup(
+        email="too-short-password@example.com",
+        password="aaa",
+        name="too-short-password"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    # 공통 응답 구조(error_response) 검증
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    assert "4 characters" in body["error"]["detail"]
+
+
+
+def test_signup_password_too_long(client):
+    """비밀번호 길이 초과(max_length = 72) 회원가입 실패"""
+
+    auth_client = AuthClient(client)
+
+    response = auth_client.signup(
+        email = "too-long-password@example.com",
+        password = f"{"a" * 73}",
+        name = "too-long-password"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    # 공통 응답 구조(error_response) 검증
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    assert "72 characters" in body["error"]["detail"]
 
 
 def test_signin_success(client):
@@ -273,12 +352,9 @@ def test_signin_email_too_long(client):
 
     too_long_email = f"{"a" * 249}@a.com"
 
-    response = auth_client.post(
-        path = "/auth/signin",
-        payload = {
-            "email" : too_long_email,
-            "password" : "1234"
-        }
+    response = auth_client.signin(
+        email = too_long_email,
+        password = "1234"
     )
 
     # 상태코드 검증
