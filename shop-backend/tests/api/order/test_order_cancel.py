@@ -279,3 +279,35 @@ def test_cancel_other_user_order_not_found(
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
 
+
+def test_cancel_order_with_invalid_token(
+        client: TestClient,
+        created_order_id: str
+):
+    """잘못된 토큰 주문 취소 실패 응답 검증"""
+
+    order_client = OrderClient(
+        client = client,
+        access_token = "INVALID-TOKEN"
+    )
+
+    # 주문 취소 API 호출
+    response = order_client.cancel_order(created_order_id)
+
+    # 상태코드 검증
+    assert response.status_code == 401
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "사용자 인증 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.UNAUTHORIZED

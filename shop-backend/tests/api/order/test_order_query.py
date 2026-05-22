@@ -282,3 +282,66 @@ def test_get_orders_with_canceled_order(
 
     assert order_status_map[created_order_id] == "CANCELED" # 첫 번째 주문은 취소 상태
     assert order_status_map[second_order_id] == "PAID"      # 두 번째 주문은 지불됨 상태
+
+
+def test_get_orders_with_invalid_token(
+        client: TestClient
+):
+    """잘못된 토큰 주문 목록 조회 실패 응답 검증"""
+
+    order_client = OrderClient(
+        client = client,
+        access_token = "INVALID-TOKEN"
+    )
+
+    response = order_client.get_orders()
+
+    # 상태코드 검증
+    assert response.status_code == 401
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "사용자 인증 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.UNAUTHORIZED
+
+
+def test_get_order_detail_with_invalid_token(
+        client: TestClient,
+        created_order_id: str
+):
+    """잘못된 토큰 주문 상세 조회 실패 응답 검증"""
+
+    order_client = OrderClient(
+        client = client,
+        access_token = "INVALID-TOKEN"
+    )
+
+    response = order_client.get_order_detail(created_order_id)
+
+    # 상태코드 검증
+    assert response.status_code == 401
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "사용자 인증 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.UNAUTHORIZED

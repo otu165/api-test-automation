@@ -245,4 +245,30 @@ def test_create_order_with_insufficient_point(
     assert order_body["error"]["code"] == error_codes.INSUFFICIENT_POINT
 
 
+def test_create_order_with_negative_quantity(
+        order_client: OrderClient
+):
+    """주문 수량 음수 입력 시 validation 실패 응답 검증"""
+
+    # 주문 생성 API 호출
+    response = order_client.create_order(
+        product_id = "KB1001",
+        quantity = -1 # 음수
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
 
