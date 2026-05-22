@@ -53,7 +53,7 @@ def test_signup_email_too_long(client):
 
     auth_client = AuthClient(client)
 
-    too_long_email = f"{"a" * 249}@a.com"
+    too_long_email = f"{'a' * 249}@a.com"
 
     response = auth_client.signup(
         email = too_long_email,
@@ -117,7 +117,7 @@ def test_signup_password_is_hashed(client):
 
 
 def test_signup_password_too_short(client):
-    """비밀번호 길이 부족(min_length = 4) 회원가입 실패"""
+    """비밀번호 길이 부족(min_length = 8) 회원가입 실패"""
     auth_client = AuthClient(client)
 
     response = auth_client.signup(

@@ -11,6 +11,8 @@
 """
 
 
+from fastapi.testclient import TestClient
+
 from tests.clients.auth_client import AuthClient
 from app.constants import error_codes
 
@@ -124,13 +126,40 @@ def test_signin_not_registered_email(client):
     assert body["error"]["code"] == error_codes.INVALID_CREDENTIALS
 
 
+def test_signin_password_too_short(
+        client: TestClient,
+        signed_up_user: dict
+):
+    """비밀번호 길이 부족(min_length = 8) 로그인 실패"""
+    auth_client = AuthClient(client)
+
+    response = auth_client.signin(
+        email = signed_up_user["email"],
+        password = signed_up_user["password"][:7],
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    # 공통 응답 구조(error_response) 검증
+    body = response.json()
+
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    assert "8 characters" in body["error"]["detail"]
+
+
+
 
 def test_signin_email_too_long(client):
     """이메일 길이 초과 로그인 실패"""
 
     auth_client = AuthClient(client)
 
-    too_long_email = f"{"a" * 249}@a.com"
+    too_long_email = f"{'a' * 249}@a.com"
 
     response = auth_client.signin(
         email = too_long_email,
@@ -160,3 +189,98 @@ def test_signin_email_too_long(client):
     assert "too long" in body["error"]["detail"]
 
 
+
+def test_signin_password_without_letter(
+        client: TestClient,
+        signed_up_user: dict
+):
+    """영문 없는 비밀번호 로그인 실패"""
+
+    auth_client = AuthClient(client)
+
+    # 로그인 API 요청
+    response = auth_client.signin(
+        email = signed_up_user["email"],
+        password = "123456!@#"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
+    assert "영문자" in body["error"]["detail"]
+
+
+def test_signin_password_without_number(
+        client: TestClient,
+        signed_up_user: dict
+):
+    """숫자 없는 비밀번호 로그인 실패"""
+
+    auth_client = AuthClient(client)
+
+    # 로그인 API 요청
+    response = auth_client.signin(
+        email=signed_up_user["email"],
+        password="asdf!@#$"
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
+    assert "숫자" in body["error"]["detail"]
+
+
+def test_signin_password_without_special_char(
+        client: TestClient,
+        signed_up_user: dict
+):
+    """특수문자 없는 비밀번호 로그인 실패"""
+
+    auth_client = AuthClient(client)
+
+    # 로그인 API 요청
+    response = auth_client.signin(
+        email=signed_up_user["email"],
+        password="asdf123456",
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+    # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
+    assert "특수문자" in body["error"]["detail"]
