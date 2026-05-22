@@ -11,6 +11,8 @@
 """
 
 
+from fastapi.testclient import TestClient
+
 from app.constants import error_codes
 from tests.clients.point_client import PointClient
 
@@ -132,4 +134,36 @@ def test_charge_point_with_negative_amount(
     # error > code 검증
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+
+def test_charge_point_with_invalid_token(
+        client: TestClient
+):
+    """잘못된 토큰 포인트 충전 실패 응답 검증"""
+
+    point_client = PointClient(
+        client = client,
+        access_token = "INVALID_TOKEN"
+    )
+
+    # 포인트 충전 API 요청
+    response = point_client.charge_point(1000)
+
+    # 상태코드 검증
+    assert response.status_code == 401
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "사용자 인증 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.UNAUTHORIZED
 
