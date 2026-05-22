@@ -11,6 +11,7 @@
 """
 
 
+from app.constants import error_codes
 from tests.clients.point_client import PointClient
 
 
@@ -79,4 +80,56 @@ def test_charge_point_increase_balance(
 
     # 충전 후 포인트 검증
     assert before_point + amount == after_point
+
+
+def test_charge_point_with_zero_amount(
+        point_client: PointClient
+):
+    """포인트 충전 금액 = 0 인 경우, validation 실패 검증"""
+
+    response = point_client.charge_point(0)
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+
+def test_charge_point_with_negative_amount(
+        point_client: PointClient
+):
+    """포인트 충전 금액이 음수인 경우, validation 실패 검증"""
+
+    response = point_client.charge_point(-1)
+
+    # 상태코드 검증
+    assert response.status_code == 422
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "부적절한 데이터 입력"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
 
