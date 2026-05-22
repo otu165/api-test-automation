@@ -16,7 +16,9 @@
 from fastapi.testclient import TestClient
 
 from tests.clients.order_client import OrderClient
+from tests.clients.point_client import PointClient
 from app.constants import error_codes
+from app.repositories import product_repository
 
 
 def test_create_order_success(
@@ -146,4 +148,101 @@ def test_create_order_with_zero_quantity(
     # error > code 검증
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+
+
+def test_create_order_with_insufficient_stock(
+        order_client: OrderClient
+):
+    """재고 부족 상품 주문 실패 응답 검증"""
+
+    product_id = "KB1001"
+
+    # 테스트 조건 : 상품 재고를 0개로 강제 업데이트
+    product_repository.update_product_stock(
+        product_id = product_id,
+        new_stock = 0
+    )
+
+    # 상품 주문 API 요청
+    response = order_client.create_order(
+        product_id = product_id,
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 400
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "주문 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.INSUFFICIENT_STOCK
+
+
+def test_create_order_with_insufficient_point(
+        order_client: OrderClient,
+        point_client: PointClient
+):
+    """포인트 부족으로 인한 주문 실패 응답 검증"""
+
+    product_id = "KB1001"
+
+    # 계정 포인트 조회
+    point_res = point_client.get_point()
+
+    # 상태코드 검증
+    assert point_res.status_code == 200
+
+    # 응답 body 에서 현재 포인트 조회
+    point_body = point_res.json()
+    assert "data" in point_body
+    assert "point" in point_body["data"]
+
+    user_point = point_body["data"]["point"]
+
+    # 상품 가격 조회
+    product = product_repository.select_product_by_id(product_id)
+
+    assert product is not None
+    assert "price" in product
+
+    product_price = product["price"]
+
+    # 사용자가 살 수 없는 수량으로 계산
+    quantity = user_point // product_price + 1
+
+    # 상품 주문 API 호출
+    order_res = order_client.create_order(
+        product_id = product_id,
+        quantity = quantity
+    )
+
+    # 상태코드 검증
+    assert order_res.status_code == 400
+
+    order_body = order_res.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert order_body["success"] is False
+    assert order_body["message"] == "주문 실패"
+    assert order_body["data"] is None
+
+    # error 검증
+    assert "error" in order_body
+    assert isinstance(order_body["error"], dict)
+
+    # error > code 검증
+    assert "code" in order_body["error"]
+    assert order_body["error"]["code"] == error_codes.INSUFFICIENT_POINT
+
+
 
