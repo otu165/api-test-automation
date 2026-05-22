@@ -1,5 +1,5 @@
 """
-경로 : shop-backend/app/models.py
+경로 : shop-backend/app/schemas/models.py
 파일명 : models.py
 
 API 요청 및 응답 데이터 모델을 관리하는 파일
@@ -12,7 +12,9 @@ API 요청 및 응답 데이터 모델을 관리하는 파일
 """
 
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+from app.utils.password_validator import validate_password_policy
 
 
 class SignUpRequest(BaseModel):
@@ -25,9 +27,9 @@ class SignUpRequest(BaseModel):
     )
 
     password: str = Field(
-        min_length = 4,
+        min_length = 8,
         max_length = 72,
-        examples = ["1234"],
+        examples = ["test1234!"],
         description = "사용자 비밀번호"
     )
 
@@ -35,6 +37,13 @@ class SignUpRequest(BaseModel):
         examples = ["홍길동"],
         description = "사용자 이름"
     )
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(_cls, password: str) -> str:
+        """비밀번호 조합 검증"""
+
+        return validate_password_policy(password)
 
 
 class SignInRequest(BaseModel):
@@ -47,11 +56,18 @@ class SignInRequest(BaseModel):
     )
 
     password: str = Field(
-        min_length = 4,
+        min_length = 8,
         max_length = 72,
-        examples = ["1234"],
+        examples = ["test1234!"],
         description = "로그인 비밀번호"
     )
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(_cls, password: str) -> str:
+        """비밀번호 조합 검증"""
+
+        return validate_password_policy(password)
 
 
 class ChargePointRequest(BaseModel):
