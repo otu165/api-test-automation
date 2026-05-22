@@ -25,14 +25,14 @@ def test_signin_success(client):
     # 회원가입
     auth_client.signup(
         email = email,
-        password = "1234",
+        password = "test1234!",
         name = "로그인유저"
     )
 
     # 로그인
     response = auth_client.signin(
         email = email,
-        password = "1234"
+        password = "test1234!"
     )
 
     # 상태코드 검증
@@ -67,13 +67,13 @@ def test_signin_wrong_password(client):
 
     auth_client.signup(
         email = "wrong-password@example.com",
-        password = "1234",
+        password = "test1234!",
         name = "비밀번호테스트유저"
     )
 
     response = auth_client.signin(
         email="wrong-password@example.com",
-        password="wrong-password"
+        password="wrong-password123@"
     )
 
     # 상태코드 검증
@@ -102,7 +102,7 @@ def test_signin_not_registered_email(client):
 
     response = auth_client.signin(
         email = "not-found@example.com",
-        password = "1234"
+        password = "test1234!"
     )
 
     # 상태코드 검증
@@ -134,7 +134,7 @@ def test_signin_email_too_long(client):
 
     response = auth_client.signin(
         email = too_long_email,
-        password = "1234"
+        password = "test1234!"
     )
 
     # 상태코드 검증

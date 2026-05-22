@@ -87,7 +87,7 @@ def signed_up_user(client: TestClient):
 
     user_data = {
         "email" : f"fixture-user-{uuid.uuid4()}@example.com",
-        "password" : "1234",
+        "password" : "fixt1234!",
         "name" : "fixture-user"
     }
 
@@ -199,7 +199,7 @@ def second_access_token(
     auth_client = AuthClient(client)
 
     second_email = "second-user-email@example.com"
-    second_password = "1234"
+    second_password = "test1234!"
 
     # 회원가입
     signup_res = auth_client.signup(

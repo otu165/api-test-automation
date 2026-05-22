@@ -24,7 +24,7 @@ def test_signup_success(client):
 
     response = auth_client.signup(
         email = "signup-success@example.com",
-        password = "1234",
+        password = "test1234!",
         name = "테스트유저"
     )
 
@@ -57,7 +57,7 @@ def test_signup_email_too_long(client):
 
     response = auth_client.signup(
         email = too_long_email,
-        password = "1234",
+        password = "test1234!",
         name = "too-long-email"
     )
 
@@ -88,7 +88,7 @@ def test_signup_password_is_hashed(client):
     """회원가입 시 비밀번호 해시 저장 검증"""
 
     email = "hased-password@example.com"
-    password = "1234"
+    password = "test1234!"
 
     auth_client = AuthClient(client)
 
@@ -122,7 +122,7 @@ def test_signup_password_too_short(client):
 
     response = auth_client.signup(
         email="too-short-password@example.com",
-        password="aaa",
+        password="1234567",
         name="too-short-password"
     )
 
@@ -137,7 +137,7 @@ def test_signup_password_too_short(client):
     assert body["data"] is None
 
     assert body["error"]["code"] == error_codes.VALIDATION_ERROR
-    assert "4 characters" in body["error"]["detail"]
+    assert "8 characters" in body["error"]["detail"]
 
 
 
@@ -174,13 +174,13 @@ def test_signup_duplicate_email(client):
 
     auth_client.signup(
         email = "duplicate@example.com",
-        password = "1234",
+        password = "test1234!",
         name = "첫번째유저"
     )
 
     response = auth_client.signup(
         email = "duplicate@example.com",
-        password = "4321",
+        password = "4321test!",
         name = "두번째유저"
     )
 
@@ -213,7 +213,7 @@ def test_signup_invalid_email_format(client):
 
     response = auth_client.signup(
         email = "invalid-email",
-        password = "1234",
+        password = "test1234!",
         name = "이메일형식테스트유저"
     )
 
