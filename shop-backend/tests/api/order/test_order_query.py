@@ -9,9 +9,11 @@
 - 내 주문 상세 조회 성공 검증
 
 """
+from fastapi.testclient import TestClient
 
-
+from tests.clients.auth_client import AuthClient
 from tests.clients.order_client import OrderClient
+from app.constants import error_codes
 
 
 def test_get_my_orders_success(
@@ -112,3 +114,37 @@ def test_get_order_detail_success(
 
     assert "status" in detail_body["data"]
     assert detail_body["data"]["status"] == "PAID"
+
+
+def test_get_other_user_order_detail_not_found(
+        client: TestClient,
+        created_order_id: str,      # A 사용자의 order_id
+        second_access_token: str    # B 사용자의 token
+):
+    """타인의 주문 상세 조회 실패 검증"""
+
+    # 타인의 주문(created_order_id) 상세 조회 API 호출
+    order_client = OrderClient(
+        client = client,
+        access_token = second_access_token
+    )
+
+    response = order_client.get_order_detail(created_order_id)
+
+    # 상태코드 검증
+    assert response.status_code == 404
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "주문 상세 조회 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
