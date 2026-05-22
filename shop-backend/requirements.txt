@@ -21,6 +21,9 @@ python-jose[cryptography]
 
 dotenv
 
+# 비밀번호 해싱
+passlib[bcrypt]
+
 # ========== pytest ==========
 
 # 테스트 실행 도구
