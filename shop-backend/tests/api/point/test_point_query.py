@@ -76,3 +76,60 @@ def test_get_point_with_invalid_token(
     # error > code 검증
     assert "code" in body["error"]
     assert body["error"]["code"] == error_codes.UNAUTHORIZED
+
+
+def test_get_point_without_auth_header(
+        client: TestClient
+):
+    """Authorization Header 없이 포인트 조회 실패 응답 검증"""
+
+    response = client.get("/points") # header 넘기지 않았음
+
+    # 상태코드 검증
+    assert response.status_code == 401
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "사용자 인증 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.UNAUTHORIZED
+
+
+def test_get_point_with_invalid_auth_header(
+        client: TestClient
+):
+    """Bearer 형식이 아닌 Auth Header 포인트 조회 실패 응답 검증"""
+
+    response = client.get(
+        "/points",
+        headers = {
+            "Authorization" : "Token invalid-token"
+        }
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 401
+
+    body = response.json()
+
+    # 공통 응답 구조(error_response) 검증
+    assert body["success"] is False
+    assert body["message"] == "사용자 인증 실패"
+    assert body["data"] is None
+
+    # error 검증
+    assert "error" in body
+    assert isinstance(body["error"], dict)
+
+    # error > code 검증
+    assert "code" in body["error"]
+    assert body["error"]["code"] == error_codes.UNAUTHORIZED

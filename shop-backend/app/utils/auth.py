@@ -111,12 +111,31 @@ def verify_access_token(token: str):
 
 
 # Authorization: Bearer <token> 형식의 Header 를 읽는 도구
-security = HTTPBearer()
+security = HTTPBearer(auto_error = False) # header 검증 + 공통 응답 구조로 통일을 위해 False 처리
 
 def get_current_user_id(
-        credentials: HTTPAuthorizationCredentials = Depends(security)
+        credentials: HTTPAuthorizationCredentials | None = Depends(security)
 ):
     """현재 로그인한 사용자의 user_id 를 반환하는 함수"""
+
+    if credentials is None:
+        raise ApiException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            message = "사용자 인증 실패",
+            code = error_codes.UNAUTHORIZED,
+            detail = "인증 토큰이 없습니다."
+        )
+
+    # HTTP 인증 scheme 은 대소문자 구분 없이 처리하는게 표준이기 때문에,
+    # 소문자로 변환해서 "bearer" 값이랑 같은지 비교한다. (방어 코드)
+    if credentials.scheme.lower() != "bearer":
+        raise ApiException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            message = "사용자 인증 실패",
+            code = error_codes.UNAUTHORIZED,
+            detail = "Bearer 토큰 형식이 아닙니다."
+        )
+
 
     # Header 에서 token 문자열만 꺼내기
     token = credentials.credentials
