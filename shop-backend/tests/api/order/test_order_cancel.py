@@ -20,6 +20,11 @@ from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
 from app.constants import error_codes
 from app.repositories import product_repository
+from tests.helpers.assertions import (
+    assert_success_response,
+    assert_error_response,
+    assert_unauthorized_response
+)
 
 
 
@@ -38,13 +43,10 @@ def test_cancel_order_success(
     cancel_order_body = cancel_order_res.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert cancel_order_body["success"] is True
-    assert cancel_order_body["message"] == "주문 취소 성공"
-    assert cancel_order_body["error"] is None
-
-    # data 구조 검증
-    assert "data" in cancel_order_body
-    assert isinstance(cancel_order_body["data"], dict)
+    assert_success_response(
+        body = cancel_order_body,
+        message = "주문 취소 성공"
+    )
 
     # data > order_id 검증
     assert "order_id" in cancel_order_body["data"]
@@ -71,17 +73,11 @@ def test_cancel_order_not_found(
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "주문 취소 실패"
-    assert body["data"] is None
-
-    # error 구조 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+    assert_error_response(
+        body = body,
+        message = "주문 취소 실패",
+        code = error_codes.ORDER_NOT_FOUND
+    )
 
 
 
@@ -106,17 +102,11 @@ def test_cancel_order_already_canceled(
     dco_body = double_cancel_order_res.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert dco_body["success"] is False
-    assert dco_body["message"] == "주문 취소 실패"
-    assert dco_body["data"] is None
-
-    # error 구조 검증
-    assert "error" in dco_body
-    assert isinstance(dco_body["error"], dict)
-
-    # error > code 검증
-    assert "code" in dco_body["error"]
-    assert dco_body["error"]["code"] == error_codes.ORDER_ALREADY_CANCELED
+    assert_error_response(
+        body = dco_body,
+        message = "주문 취소 실패",
+        code = error_codes.ORDER_ALREADY_CANCELED
+    )
 
 
 
@@ -267,17 +257,11 @@ def test_cancel_other_user_order_not_found(
     body = response.json()
 
     # 데이터 검증
-    assert body["success"] is False
-    assert body["message"] == "주문 취소 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+    assert_error_response(
+        body = body,
+        message = "주문 취소 실패",
+        code = error_codes.ORDER_NOT_FOUND
+    )
 
 
 def test_cancel_order_with_invalid_token(
@@ -297,17 +281,5 @@ def test_cancel_order_with_invalid_token(
     # 상태코드 검증
     assert response.status_code == 401
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "사용자 인증 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.UNAUTHORIZED
+    # 사용자 인증 실패 응답 검증
+    assert_unauthorized_response(response.json())

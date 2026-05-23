@@ -11,9 +11,13 @@
 """
 from fastapi.testclient import TestClient
 
-from tests.clients.auth_client import AuthClient
 from tests.clients.order_client import OrderClient
 from app.constants import error_codes
+from tests.helpers.assertions import (
+    assert_success_response,
+    assert_error_response,
+    assert_unauthorized_response
+)
 
 
 def test_get_my_orders_success(
@@ -57,13 +61,10 @@ def test_get_my_orders_success(
     body = response.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert body["success"] is True
-    assert body["message"] == "주문 목록 조회 성공"
-    assert body["error"] is None
-
-    # data 구조 검증
-    assert "data" in body
-    assert isinstance(body["data"], dict)
+    assert_success_response(
+        body = body,
+        message = "주문 목록 조회 성공"
+    )
 
     assert len(body["data"]["orders"]) == body["data"]["count"]
 
@@ -95,13 +96,10 @@ def test_get_order_detail_success(
     detail_body = detail_res.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert detail_body["success"] is True
-    assert detail_body["message"] == "주문 상세 조회 성공"
-    assert detail_body["error"] is None
-
-    # data 구조 검증
-    assert "data" in detail_body
-    assert isinstance(detail_body["data"], dict)
+    assert_success_response(
+        body = detail_body,
+        message = "주문 상세 조회 성공"
+    )
 
     assert "order_id" in detail_body["data"]
     assert detail_body["data"]["order_id"] == created_order_id
@@ -137,17 +135,11 @@ def test_get_other_user_order_detail_not_found(
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "주문 상세 조회 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+    assert_error_response(
+        body = body,
+        message = "주문 상세 조회 실패",
+        code = error_codes.ORDER_NOT_FOUND
+    )
 
 
 def test_get_canceled_order_detail_success(
@@ -171,13 +163,10 @@ def test_get_canceled_order_detail_success(
     detail_body = detail_res.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert detail_body["success"] is True
-    assert detail_body["message"] == "주문 상세 조회 성공"
-    assert detail_body["error"] is None
-
-    # data 구조 검증
-    assert "data" in detail_body
-    assert isinstance(detail_body["data"], dict)
+    assert_success_response(
+        body = detail_body,
+        message = "주문 상세 조회 성공"
+    )
 
     # data > order_id 검증
     assert "order_id" in detail_body["data"]
@@ -204,17 +193,11 @@ def test_get_order_detail_not_found(
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "주문 상세 조회 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.ORDER_NOT_FOUND
+    assert_error_response(
+        body = body,
+        message = "주문 상세 조회 실패",
+        code = error_codes.ORDER_NOT_FOUND
+    )
 
 
 def test_get_orders_with_canceled_order(
@@ -255,13 +238,10 @@ def test_get_orders_with_canceled_order(
     orders_body = orders_res.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert orders_body["success"] is True
-    assert orders_body["message"] == "주문 목록 조회 성공"
-    assert orders_body["error"] is None
-
-    # data 검증
-    assert "data" in orders_body
-    assert isinstance(orders_body["data"], dict)
+    assert_success_response(
+        body = orders_body,
+        message = "주문 목록 조회 성공",
+    )
 
     # data > orders / count 검증
     assert "orders" in orders_body["data"]
@@ -299,20 +279,8 @@ def test_get_orders_with_invalid_token(
     # 상태코드 검증
     assert response.status_code == 401
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "사용자 인증 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.UNAUTHORIZED
+    # 사용자 인증 실패 응답 검증
+    assert_unauthorized_response(response.json())
 
 
 def test_get_order_detail_with_invalid_token(
@@ -331,17 +299,5 @@ def test_get_order_detail_with_invalid_token(
     # 상태코드 검증
     assert response.status_code == 401
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "사용자 인증 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.UNAUTHORIZED
+    # 사용자 인증 실패 응답 검증
+    assert_unauthorized_response(response.json())

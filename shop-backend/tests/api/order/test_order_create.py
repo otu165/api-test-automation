@@ -19,6 +19,12 @@ from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
 from app.constants import error_codes
 from app.repositories import product_repository
+from tests.helpers.assertions import (
+    assert_success_response,
+    assert_error_response,
+    assert_unauthorized_response,
+    assert_validation_error_response
+)
 
 
 def test_create_order_success(
@@ -40,13 +46,10 @@ def test_create_order_success(
     body = response.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert body["success"] is True
-    assert body["message"] == "주문 성공"
-    assert body["error"] is None
-
-    # data 구조 검증
-    assert "data" in body
-    assert isinstance(body["data"], dict)
+    assert_success_response(
+        body = body,
+        message = "주문 성공"
+    )
 
     # data > product_id 검증
     assert "product_id" in body["data"]
@@ -76,20 +79,8 @@ def test_create_order_with_invalid_token(
     # 상태코드 검증
     assert response.status_code == 401
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "사용자 인증 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.UNAUTHORIZED
+    # 사용자 인증 실패 응답 검증
+    assert_unauthorized_response(response.json())
 
 
 def test_create_order_with_not_found_product(
@@ -108,17 +99,11 @@ def test_create_order_with_not_found_product(
     body = response.json()
 
     # 실패 응답 구조 검증
-    assert body["success"] is False
-    assert body["message"] == "주문 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.PRODUCT_NOT_FOUND
+    assert_error_response(
+        body = body,
+        message = "주문 실패",
+        code = error_codes.PRODUCT_NOT_FOUND
+    )
 
 
 def test_create_order_with_zero_quantity(
@@ -134,20 +119,8 @@ def test_create_order_with_zero_quantity(
     # 상태코드 검증
     assert response.status_code == 422
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 구조 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(response.json())
 
 
 def test_create_order_with_insufficient_stock(
@@ -175,17 +148,11 @@ def test_create_order_with_insufficient_stock(
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "주문 실패"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.INSUFFICIENT_STOCK
+    assert_error_response(
+        body = body,
+        message = "주문 실패",
+        code = error_codes.INSUFFICIENT_STOCK
+    )
 
 
 def test_create_order_with_insufficient_point(
@@ -232,17 +199,11 @@ def test_create_order_with_insufficient_point(
     order_body = order_res.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert order_body["success"] is False
-    assert order_body["message"] == "주문 실패"
-    assert order_body["data"] is None
-
-    # error 검증
-    assert "error" in order_body
-    assert isinstance(order_body["error"], dict)
-
-    # error > code 검증
-    assert "code" in order_body["error"]
-    assert order_body["error"]["code"] == error_codes.INSUFFICIENT_POINT
+    assert_error_response(
+        body = order_body,
+        message = "주문 실패",
+        code = error_codes.INSUFFICIENT_POINT
+    )
 
 
 def test_create_order_with_negative_quantity(
@@ -259,16 +220,6 @@ def test_create_order_with_negative_quantity(
     # 상태코드 검증
     assert response.status_code == 422
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(response.json())
 

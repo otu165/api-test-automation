@@ -15,6 +15,11 @@ from fastapi.testclient import TestClient
 
 from tests.clients.auth_client import AuthClient
 from app.constants import error_codes
+from tests.helpers.assertions import (
+    assert_success_response,
+    assert_error_response,
+    assert_validation_error_response
+)
 
 
 def test_signin_success(client):
@@ -43,13 +48,10 @@ def test_signin_success(client):
     body = response.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert body["success"] is True
-    assert body["message"] == "로그인 성공"
-    assert body["error"] is None
-
-    # data 구조 검증
-    assert "data" in body
-    assert isinstance(body["data"], dict)
+    assert_success_response(
+        body = body,
+        message = "로그인 성공"
+    )
 
     # data > access_token 검증
     assert "access_token" in body["data"]
@@ -84,17 +86,11 @@ def test_signin_wrong_password(client):
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "로그인 실패"
-    assert body["data"] is None
-
-    # error 구조 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.INVALID_CREDENTIALS
+    assert_error_response(
+        body = body,
+        message = "로그인 실패",
+        code = error_codes.INVALID_CREDENTIALS
+    )
 
 
 def test_signin_not_registered_email(client):
@@ -113,17 +109,11 @@ def test_signin_not_registered_email(client):
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "로그인 실패"
-    assert body["data"] is None
-
-    # error 구조 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.INVALID_CREDENTIALS
+    assert_error_response(
+        body = body,
+        message = "로그인 실패",
+        code = error_codes.INVALID_CREDENTIALS
+    )
 
 
 def test_signin_password_too_short(
@@ -141,14 +131,10 @@ def test_signin_password_too_short(
     # 상태코드 검증
     assert response.status_code == 422
 
-    # 공통 응답 구조(error_response) 검증
+    # 부적절한 데이터 입력 응답 검증
     body = response.json()
 
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    assert_validation_error_response(body)
     assert "8 characters" in body["error"]["detail"]
 
 
@@ -171,18 +157,8 @@ def test_signin_email_too_long(client):
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 검증
     assert "detail" in body["error"]
@@ -209,14 +185,8 @@ def test_signin_password_without_letter(
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "영문자" in body["error"]["detail"]
@@ -241,14 +211,8 @@ def test_signin_password_without_number(
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "숫자" in body["error"]["detail"]
@@ -273,14 +237,8 @@ def test_signin_password_without_special_char(
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "특수문자" in body["error"]["detail"]

@@ -15,6 +15,11 @@ from starlette.testclient import TestClient
 from tests.clients.auth_client import AuthClient
 from app.constants import error_codes
 from app.repositories import user_repository
+from tests.helpers.assertions import (
+    assert_success_response,
+    assert_error_response,
+    assert_validation_error_response
+)
 
 
 def test_signup_success(client):
@@ -34,13 +39,10 @@ def test_signup_success(client):
     body = response.json()
 
     # 공통 응답 구조(success_response) 검증
-    assert body["success"] is True
-    assert body["message"] == "회원가입 성공"
-    assert body["error"] is None
-
-    # data 구조 검증
-    assert "data" in body
-    assert isinstance(body["data"], dict)
+    assert_success_response(
+        body = body,
+        message = "회원가입 성공"
+    )
 
     # data > user_id 검증
     assert "user_id" in body["data"]
@@ -66,18 +68,8 @@ def test_signup_email_too_long(client):
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 검증
     assert "detail" in body["error"]
@@ -101,12 +93,11 @@ def test_signup_password_is_hashed(client):
     # 상태코드 검증
     assert response.status_code == 201
 
-    # body 검증
-    body = response.json()
-
-    assert body["success"] is True
-    assert body["message"] == "회원가입 성공"
-    assert body["error"] is None
+    # success_response 검증
+    assert_success_response(
+        body = response.json(),
+        message = "회원가입 성공"
+    )
 
     # DB에서 email 과 일치하는 유저 직접 조회
     user = user_repository.select_user_by_email(email)
@@ -129,14 +120,11 @@ def test_signup_password_too_short(client):
     # 상태코드 검증
     assert response.status_code == 422
 
-    # 공통 응답 구조(error_response) 검증
     body = response.json()
 
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
     assert "8 characters" in body["error"]["detail"]
 
 
@@ -155,14 +143,11 @@ def test_signup_password_too_long(client):
     # 상태코드 검증
     assert response.status_code == 422
 
-    # 공통 응답 구조(error_response) 검증
     body = response.json()
 
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
     assert "72 characters" in body["error"]["detail"]
 
 
@@ -190,17 +175,12 @@ def test_signup_duplicate_email(client):
     body = response.json()
 
     # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "회원가입 실패"
-    assert body["data"] is None
+    assert_error_response(
+        body = body,
+        message = "회원가입 실패",
+        code = error_codes.DUPLICATED_EMAIL
+    )
 
-    # error 구조 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.DUPLICATED_EMAIL
 
 
 def test_signup_invalid_email_format(client):
@@ -220,20 +200,8 @@ def test_signup_invalid_email_format(client):
     # 상태코드 검증
     assert response.status_code == 422
 
-    body = response.json()
-
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 구조 검증
-    assert "error" in body
-    assert isinstance(body["error"], dict)
-
-    # error > code 검증
-    assert "code" in body["error"]
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(response.json())
 
 
 def test_signup_password_without_letter(
@@ -255,14 +223,8 @@ def test_signup_password_without_letter(
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "영문자" in body["error"]["detail"]
@@ -287,14 +249,8 @@ def test_signup_password_without_number(
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "숫자" in body["error"]["detail"]
@@ -319,14 +275,8 @@ def test_signup_password_without_special_char(
 
     body = response.json()
 
-    # 공통 응답 구조(error_response) 검증
-    assert body["success"] is False
-    assert body["message"] == "부적절한 데이터 입력"
-    assert body["data"] is None
-
-    # error 검증
-    assert "error" in body
-    assert body["error"]["code"] == error_codes.VALIDATION_ERROR
+    # 부적절한 데이터 입력 응답 검증
+    assert_validation_error_response(body)
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "특수문자" in body["error"]["detail"]
