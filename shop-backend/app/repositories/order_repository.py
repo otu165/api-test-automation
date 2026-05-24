@@ -57,20 +57,6 @@ def insert_order(
         connection.close()
 
 
-def select_all_orders():
-    """모든 주문 조회"""
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(sql_queries.SELECT_ALL_ORDERS)
-    orders = cursor.fetchall()
-
-    conn.close()
-
-    return [dict(order) for order in orders]
-
-
 def select_order_by_id(
     order_id: str,
     connection: Optional[sqlite3.Connection] = None

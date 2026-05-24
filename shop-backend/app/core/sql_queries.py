@@ -161,18 +161,6 @@ INSERT_ORDER = """
 """
 
 
-SELECT_ALL_ORDERS = """
-    SELECT order_id
-         , user_id
-         , product_id
-         , quantity
-         , total_price
-         , status
-         , created_at
-      FROM tb_order
-"""
-
-
 SELECT_ORDER_BY_ID = """
     SELECT order_id
          , user_id
