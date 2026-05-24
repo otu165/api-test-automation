@@ -39,3 +39,6 @@ httpx
 
 # pytest 테스트 결과를 HTML 파일로 만들어주는 플러그인
 pytest-html
+
+# 테스트 커버리지 도구
+pytest-cov
