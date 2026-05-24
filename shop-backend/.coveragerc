@@ -1,0 +1,18 @@
+# coverage.py 실행 대상 설정
+[run]
+
+# app 폴더만 커버리지 측정 (shop-backend/app/ 하위 파일들)
+source = app
+
+[report]
+
+# Miss 된 줄 번호 표시
+show_missing = True
+
+# 빈 파일(__init__.py) 숨김
+skip_empty = True
+
+# 커버리지 측정 제외 대상
+omit =
+    app/__init__.py
+    app/*/__init__.py
