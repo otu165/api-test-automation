@@ -13,9 +13,13 @@
 
 from fastapi.testclient import TestClient
 
+from app.utils.auth import create_access_token
+from app.constants import error_codes
+
 from tests.clients.point_client import PointClient
 from tests.helpers.assertions import (
     assert_success_response,
+    assert_error_response,
     assert_unauthorized_response,
     assert_validation_error_response
 )
@@ -168,3 +172,34 @@ def test_charge_point_multiple_times(
     # 포인트 충전량 검증
     assert before_point + first_charge_amount + second_charge_amount == after_point
 
+
+def test_charge_point_with_not_found_user_token(
+        client: TestClient
+):
+    """DB 에 존재하지 않는 user_id 를 가진 토큰으로 포인트 충전 실패 응답 검증"""
+
+    # DB 에 존재하지 않는 user_id 로 JWT 생성
+    access_token = create_access_token(
+        user_id = "not-found-user-id"
+    )
+
+    # 포인트 충전 API 호출
+    response = client.post(
+        "/points/charge",
+        headers = {
+            "Authorization" : f"Bearer {access_token}"
+        },
+        json = {
+            "amount" : 1000
+        }
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 404
+
+    # 사용자 없음 응답 검증
+    assert_error_response(
+        body = response.json(),
+        message = "포인트 충전 실패",
+        code = error_codes.USER_NOT_FOUND
+    )

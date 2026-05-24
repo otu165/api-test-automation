@@ -14,8 +14,10 @@
 
 from fastapi.testclient import TestClient
 
+from app.constants import error_codes
 from tests.clients.point_client import PointClient
-from tests.helpers.assertions import assert_success_response
+from app.utils.auth import create_access_token
+from tests.helpers.assertions import assert_success_response, assert_error_response
 
 import pytest
 
@@ -47,4 +49,33 @@ def test_get_point_success(
     assert "point" in body["data"]
     assert isinstance(body["data"]["point"], int)
     assert 0 <= body["data"]["point"]
+
+
+def test_get_point_with_not_found_user_token(
+        client: TestClient
+):
+    """DB 에 존재하지 않는 사용자 토큰으로 포인트 조회 실패 응답 검증"""
+
+    # DB 에 존재하지 않는 user_id 사용하여 JWT 생성
+    access_token = create_access_token(
+        user_id = "not-found-user-id"
+    )
+
+    # 포인트 조회 API 요청
+    response = client.get(
+        "/points",
+        headers = {
+            "Authorization" : f"Bearer {access_token}"
+        }
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 404
+
+    # 사용자 없음 응답 검증
+    assert_error_response(
+        body = response.json(),
+        message = "포인트 조회 실패",
+        code = error_codes.USER_NOT_FOUND
+    )
 

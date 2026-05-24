@@ -15,6 +15,7 @@
 
 from fastapi.testclient import TestClient
 
+from app.utils.auth import create_access_token
 from tests.clients.order_client import OrderClient
 from tests.clients.point_client import PointClient
 from app.constants import error_codes
@@ -226,4 +227,36 @@ def test_create_order_with_negative_quantity(
 
     # 부적절한 데이터 입력 응답 검증
     assert_validation_error_response(response.json())
+
+
+def test_create_order_with_not_found_user_token(
+        client: TestClient
+):
+    """DB 에 존재하지 않는 user_id 를 가진 토큰으로 주문 생성 실패 응답 검증"""
+
+    # DB 에 존재하지 않는 user_id 로 JWT 생성
+    access_token = create_access_token(
+        user_id = "not-found-user-id"
+    )
+
+    order_client = OrderClient(
+        client = client,
+        access_token = access_token
+    )
+
+    # 주문 생성 API 호출
+    response = order_client.create_order(
+        product_id = "KB1001",
+        quantity = 1
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 404
+
+    # 사용자 없음 응답 검증
+    assert_error_response(
+        body = response.json(),
+        message = "주문 실패",
+        code = error_codes.USER_NOT_FOUND
+    )
 
