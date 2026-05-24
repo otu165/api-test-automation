@@ -284,3 +284,27 @@ def test_signup_password_without_special_char(
 
     # error > detail 메시지 검증 (password_validator.py 에서 추가됨)
     assert "특수문자" in body["error"]["detail"]
+
+
+def test_signup_empty_name(
+        client: TestClient
+):
+    """빈 이름 회원가입 실패 응답 검증"""
+
+    auth_client = AuthClient(client)
+
+    response = auth_client.signup(
+        email = "empty-name@example.com",
+        password = "test1234!",
+        name = ""
+    )
+
+    # 상태코드 검증
+    assert response.status_code == 400
+
+    # 회원가입 실패 응답 검증
+    assert_error_response(
+        body = response.json(),
+        message = "회원가입 실패",
+        code = error_codes.INVALID_NAME
+    )
