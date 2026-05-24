@@ -26,6 +26,10 @@ from tests.helpers.assertions import (
     assert_validation_error_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.order
+
 
 def test_create_order_success(
         order_client: OrderClient

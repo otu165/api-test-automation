@@ -15,6 +15,12 @@ from concurrent.futures import ThreadPoolExecutor
 from tests.clients.order_client import OrderClient
 from app.repositories import product_repository
 
+import pytest
+
+pytestmark = [
+    pytest.mark.order,
+    pytest.mark.slow
+]
 
 
 def test_create_order_concurrently_with_limited_stock(

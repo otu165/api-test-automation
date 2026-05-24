@@ -19,6 +19,10 @@ from tests.helpers.assertions import (
     assert_unauthorized_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.order
+
 
 def test_get_my_orders_success(
         order_client: OrderClient

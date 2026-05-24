@@ -21,6 +21,10 @@ from tests.helpers.assertions import (
     assert_validation_error_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.auth
+
 
 def test_signin_success(client):
     """로그인 성공 및 JWT 발급 검증"""

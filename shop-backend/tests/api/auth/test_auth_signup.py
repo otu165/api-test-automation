@@ -21,6 +21,10 @@ from tests.helpers.assertions import (
     assert_validation_error_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.auth
+
 
 def test_signup_success(client):
     """회원가입 성공 응답 검증"""

@@ -19,6 +19,10 @@ from tests.helpers.assertions import (
     assert_unauthorized_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.point
+
 
 def test_get_point_success(
         client: TestClient,

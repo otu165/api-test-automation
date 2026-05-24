@@ -20,6 +20,10 @@ from tests.helpers.assertions import (
     assert_validation_error_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.point
+
 
 def test_charge_point_success(
         point_client: PointClient

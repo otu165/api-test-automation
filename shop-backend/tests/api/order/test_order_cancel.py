@@ -26,6 +26,10 @@ from tests.helpers.assertions import (
     assert_unauthorized_response
 )
 
+import pytest
+
+pytestmark = pytest.mark.order
+
 
 
 def test_cancel_order_success(

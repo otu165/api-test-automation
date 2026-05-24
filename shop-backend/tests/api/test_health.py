@@ -14,6 +14,10 @@
 from fastapi.testclient import TestClient
 from app.main import app
 
+import pytest
+
+pytestmark = pytest.mark.health
+
 
 # FastAPI 서버를 테스트용으로 실행하는 가짜 클라이언트 생성
 # (서버 실행 없이 python 내부에서 직접 API 호출)
