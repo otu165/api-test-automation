@@ -29,7 +29,7 @@ import pytest
 pytestmark = pytest.mark.auth
 
 
-def test_get_point_with_invalid_token(
+def test_protected_api_with_invalid_token(
         client: TestClient
 ):
     """잘못된 토큰 포인트 조회 실패 응답 검증"""
@@ -48,7 +48,7 @@ def test_get_point_with_invalid_token(
     assert_unauthorized_response(response.json())
 
 
-def test_get_point_with_forged_jwt_token(
+def test_protected_api_with_forged_jwt_token(
         client: TestClient
 ):
     """위조된 JWT 토큰 포인트 조회 실패 응답 검증"""
@@ -79,7 +79,7 @@ def test_get_point_with_forged_jwt_token(
     assert_unauthorized_response(response.json())
 
 
-def test_get_point_with_expired_jwt_token(
+def test_protected_api_with_expired_jwt_token(
         client: TestClient
 ):
     """만료된 JWT 토큰 포인트 조회 실패 응답 검증"""
@@ -110,7 +110,7 @@ def test_get_point_with_expired_jwt_token(
     assert_unauthorized_response(response.json())
 
 
-def test_get_point_with_missing_user_id_jwt_token(
+def test_protected_api_with_missing_user_id_jwt_token(
         client: TestClient
 ):
     """user_id 가 없는 JWT 토큰 포인트 조회 실패 응답 검증"""
@@ -140,7 +140,7 @@ def test_get_point_with_missing_user_id_jwt_token(
     assert_unauthorized_response(response.json())
 
 
-def test_get_point_without_auth_header(
+def test_protected_api_without_auth_header(
         client: TestClient
 ):
     """Authorization Header 없이 포인트 조회 실패 응답 검증"""
@@ -154,7 +154,7 @@ def test_get_point_without_auth_header(
     assert_unauthorized_response(response.json())
 
 
-def test_get_point_with_invalid_auth_header(
+def test_protected_api_with_invalid_auth_header(
         client: TestClient
 ):
     """Bearer 형식이 아닌 Auth Header 포인트 조회 실패 응답 검증"""
