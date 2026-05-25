@@ -28,10 +28,22 @@ jobs:
       - name: Run pytest
         env:
           SECRET_KEY: test-secret-key
-        run: pytest --html=reports/shop-backend-api-test-report.html --self-contained-html
+        run: >
+          pytest
+          --html=reports/shop-backend-api-test-report.html
+          --self-contained-html
+          --cov=app
+          --cov-report=term-missing
+          --cov-report=html:reports/shop-backend-api-coverage-report
 
       - name: Upload test report
         uses: actions/upload-artifact@v4
         with:
           name: shop-backend-api-test-report
           path: shop-backend/reports/shop-backend-api-test-report.html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: shop-backend-api-coverage-report
+          path: shop-backend/reports/shop-backend-api-coverage-report
