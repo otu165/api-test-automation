@@ -59,3 +59,4 @@ api-test-automation/
 ## 진행 상황
 
 - [x] shop-backend
+- [ ] booking-backend
